@@ -4,10 +4,10 @@
 image:
   registry: quay.io
   repository: rfcurated/zalando/postgres-operator
-  tag: 1.14.0-jammy-scratch-fips-rfcurated
+  tag: 1.15-jammy-scratch-fips-rfcurated
 configConnectionPooler:
-  connection_pooler_image: "quay.io/rfcurated/pgbouncer:1.24.1-jammy-fips-bnt-rfcurated"
+  connection_pooler_image: "quay.io/rfcurated/pgbouncer:1.25.1-jammy-fips-rfcurated"
 configLogicalBackup:
-  logical_backup_docker_image: "quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.14.0-jammy-scratch-fips-rfcurated"
+  logical_backup_docker_image: "quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.15-jammy-scratch-fips-rfcurated"
 configGeneral:
-  docker_image: "quay.io/rfcurated/zalando/spilo-17:4.0-p2-jammy-fips-rfcurated"
+  docker_image: "quay.io/rfcurated/zalando/spilo-17:4.0-p3-jammy-fips-rfcurated"
