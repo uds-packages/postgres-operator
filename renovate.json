@@ -18,6 +18,10 @@
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?-jammy-scratch-bnt-fips-rfcurated$"
     },
     {
+      "matchPackageNames": ["quay.io/rfcurated/zalando/spilo-17"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)-jammy-fips-rfcurated$"
+    },
+    {
       "matchPackageNames": ["ghcr.io/zalando/spilo-17"],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)$"
     },
