@@ -1,5 +1,5 @@
 # This repository is owned by the Software Factory Team
-* @defenseunicorns/swf
+* @uds-packages/uds-foundry @uds-packages/federal-swf
 
 # Additional privileged files
 /CODEOWNERS @jeff-mccoy @daveworth

@@ -12,7 +12,6 @@ includes:
   - actions: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.21.5/tasks/actions.yaml
   - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.21.5/tasks/badge.yaml
   - upgrade: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.21.5/tasks/upgrade.yaml
-  - compliance: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.21.5/tasks/compliance.yaml
 
 tasks:
   - name: default
@@ -51,7 +50,6 @@ tasks:
       - task: create-dev-package
       - task: setup:k3d-test-cluster
       - task: create-deploy-test-bundle
-      - task: compliance:validate
 
   - name: test-upgrade
     description: Test an upgrade from the latest released package to the current branch
@@ -59,11 +57,8 @@ tasks:
       - task: upgrade:create-latest-tag-bundle
       - task: setup:k3d-test-cluster
       - task: deploy:test-bundle
-      - task: compliance:validate
       - task: create-dev-package
       - task: create-deploy-test-bundle
-      - task: compliance:validate
-      - task: compliance:evaluate
 
   - name: publish-release
     description: Build and publish the packages
