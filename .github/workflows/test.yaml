@@ -46,7 +46,7 @@ jobs:
       upgrade-flavors: ${{ needs.check-flavor.outputs.upgrade-flavors }}
       flavor: ${{ matrix.flavor }}
       type: ${{ matrix.type }}
-      runsOn: uds-swf-ubuntu-big-boy-4-core
+      runsOn: appstore-4-core-amd64
     secrets: inherit # Inherits all secrets from the parent workflow.
 
   verify-test:
