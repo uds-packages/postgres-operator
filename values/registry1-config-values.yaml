@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 metrics:
-  image: "registry1.dso.mil/ironbank/opensource/prometheus/postgres-exporter:v0.17.1"
+  image: "registry1.dso.mil/ironbank/opensource/prometheus/postgres-exporter:v0.18.1"
 
 job:
-  image: "ghcr.io/zalando/spilo-17:4.0-p2"
+  image: "ghcr.io/zalando/spilo-17:4.0-p3"
