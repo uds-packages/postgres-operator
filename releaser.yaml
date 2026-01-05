@@ -9,5 +9,5 @@ flavors:
     # renovate-uds: datasource=docker depName=registry1.dso.mil/ironbank/opensource/zalando/postgres-operator extractVersion=^v?(?<version>\d+\.\d+\.\d+)$
     version: 1.15.0-uds.0
   - name: unicorn
-    # renovate-uds: datasource=docker depName=quay.io/rfcurated/zalando/postgres-operator
-    version: 1.14.0-uds.13
+    # renovate-uds: datasource=docker depName=quay.io/rfcurated/zalando/postgres-operator extractVersion=^v?(?<version>\d+\.\d+\.\d+)$
+    version: 1.15.0-uds.0
