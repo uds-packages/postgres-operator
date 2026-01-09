@@ -15,7 +15,6 @@ spec:
       targetPort: 9187
       kind: PodMonitor
       description: "Postgres Exporter Port"
-      fallbackScrapeProtocol: PrometheusText0.0.4
   network:
     serviceMesh:
       mode: {{ if .Values.ambient }}ambient{{ else }}sidecar{{ end }}
