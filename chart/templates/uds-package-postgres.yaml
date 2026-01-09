@@ -8,6 +8,14 @@ metadata:
   name: postgres
   namespace: postgres
 spec:
+  monitor:
+    - selector:
+        application: spilo
+      portName: exporter
+      targetPort: 9187
+      kind: PodMonitor
+      description: "Postgres Exporter Port"
+      fallbackScrapeProtocol: PrometheusText0.0.4
   network:
     serviceMesh:
       mode: {{ if .Values.ambient }}ambient{{ else }}sidecar{{ end }}
@@ -38,15 +46,6 @@ spec:
         remoteNamespace: {{ .Release.Namespace }}
         remoteSelector:
           app.kubernetes.io/name: postgres-operator
-
-      - direction: Ingress
-        selector:
-          application: spilo
-        remoteNamespace: monitoring
-        remoteSelector:
-          app: prometheus
-        port: 9187
-        description: "Postgres Exporter Port"
 
       - direction: Egress
         selector:
