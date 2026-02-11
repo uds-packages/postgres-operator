@@ -32,5 +32,5 @@ jobs:
       security-events: write
       # Used to receive a badge.
       id-token: write
-    uses: defenseunicorns/uds-common/.github/workflows/callable-scorecard.yaml@730d22c6e061153d525a6d6f932e108ae952bd46 # v1.23.0
+    uses: defenseunicorns/uds-common/.github/workflows/callable-scorecard.yaml@802b2766ad27fdeaa9f65414d6fcf9f4975610be # v1.24.0
     secrets: inherit
