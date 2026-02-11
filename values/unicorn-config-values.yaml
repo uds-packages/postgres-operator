@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 metrics:
-  image: "quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.18.1-jammy-scratch-bnt-fips-rfcurated"
+  image: "quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.19-jammy-scratch-bnt-fips-rfcurated"
 
 job:
   image: "quay.io/rfcurated/zalando/spilo-17:4.0-p3-jammy-fips-rfcurated"
