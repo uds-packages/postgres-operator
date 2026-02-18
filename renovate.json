@@ -9,6 +9,23 @@
   ],
   "packageRules": [
     {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^quay\\.io/rfcurated/"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?-.*fips.*rfcurated$"
+    },
+    {
+      "matchPackageNames": ["quay.io/rfcurated/prometheuscommunity/postgres-exporter"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?-jammy-scratch-bnt-fips-rfcurated$"
+    },
+    {
+      "matchPackageNames": ["quay.io/rfcurated/zalando/spilo-17"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)-jammy-fips-rfcurated$"
+    },
+    {
+      "matchPackageNames": ["ghcr.io/zalando/spilo-17"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)$"
+    },
+    {
       "groupName": "Postgres Support Dependencies",
       "labels": [
         "support-deps"

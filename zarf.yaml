@@ -21,9 +21,9 @@ components:
     manifests:
       - name: crds
         files:
-          - https://github.com/zalando/postgres-operator/raw/v1.14.0/charts/postgres-operator/crds/operatorconfigurations.yaml
-          - https://github.com/zalando/postgres-operator/raw/v1.14.0/charts/postgres-operator/crds/postgresqls.yaml
-          - https://github.com/zalando/postgres-operator/raw/v1.14.0/charts/postgres-operator/crds/postgresteams.yaml
+          - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/operatorconfigurations.yaml
+          - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/postgresqls.yaml
+          - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/postgresteams.yaml
   - name: postgres-operator
     required: true
     only:
@@ -41,13 +41,13 @@ components:
           - ./values/registry1-config-values.yaml
     images:
       # Iron Bank
-      - registry1.dso.mil/ironbank/opensource/zalando/postgres-operator:v1.14.0
-      - registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.8.2
-      - registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.21.0
+      - registry1.dso.mil/ironbank/opensource/zalando/postgres-operator:v1.15.0
+      - registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.15.1
+      - registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.25.1
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
-      - ghcr.io/zalando/spilo-17:4.0-p2
+      - ghcr.io/zalando/spilo-17:4.0-p3
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
-      - registry1.dso.mil/ironbank/opensource/prometheus/postgres-exporter:v0.17.1
+      - registry1.dso.mil/ironbank/opensource/prometheus/postgres-exporter:v0.19.0
 
   - name: postgres-operator
     required: true
@@ -63,13 +63,13 @@ components:
         valuesFiles:
           - ./values/upstream-config-values.yaml
     images:
-      - ghcr.io/zalando/postgres-operator:v1.14.0
-      - ghcr.io/zalando/postgres-operator/logical-backup:v1.14.0
+      - ghcr.io/zalando/postgres-operator:v1.15.1
+      - ghcr.io/zalando/postgres-operator/logical-backup:v1.15.1
       - ghcr.io/cloudnative-pg/pgbouncer:1.24.1-23
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
-      - ghcr.io/zalando/spilo-17:4.0-p2
+      - ghcr.io/zalando/spilo-17:4.0-p3
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
-      - quay.io/prometheuscommunity/postgres-exporter:v0.17.1
+      - quay.io/prometheuscommunity/postgres-exporter:v0.19.0
 
   - name: postgres-operator
     required: true
@@ -85,10 +85,10 @@ components:
         valuesFiles:
           - ./values/unicorn-config-values.yaml
     images:
-      - quay.io/rfcurated/zalando/postgres-operator:1.14.0-jammy-scratch-fips-rfcurated
-      - quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.14.0-jammy-scratch-fips-rfcurated
-      - quay.io/rfcurated/pgbouncer:1.24.1-jammy-fips-bnt-rfcurated
+      - quay.io/rfcurated/zalando/postgres-operator:1.15-jammy-scratch-fips-rfcurated
+      - quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.15-jammy-scratch-fips-rfcurated
+      - quay.io/rfcurated/pgbouncer:1.25.1-jammy-fips-rfcurated
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
-      - quay.io/rfcurated/zalando/spilo-17:4.0-p2-jammy-fips-rfcurated
+      - quay.io/rfcurated/zalando/spilo-17:4.0-p3-jammy-fips-rfcurated
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
-      - quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.17.1-jammy-scratch-bnt-fips-rfcurated
+      - quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.19-jammy-scratch-bnt-fips-rfcurated
