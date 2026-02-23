@@ -57,3 +57,33 @@ components:
               if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
                  ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
               fi
+    
+  - name: connection-pooler
+    required: true
+    only:
+      flavor: unicorn 
+    actions:
+      onDeploy:
+        after:
+          - description: Configure unicorn connection pooler image
+            maxTotalSeconds: 300
+            cmd: |
+              CLUSTER_NAME=$(./zarf tools kubectl get postgresql -n postgres -o jsonpath='{.items[0].metadata.name}')
+              
+              if [[ -z "$CLUSTER_NAME" ]]; then
+                echo "No Postgres cluster found in 'postgres' namespace. Skipping..."
+                exit 0
+              fi
+
+              POOLER_ENABLED=$(./zarf tools kubectl get postgresql -n postgres $CLUSTER_NAME -o jsonpath='{.spec.enableConnectionPooler}')
+
+              if [[ "$POOLER_ENABLED" == "true" ]]; then
+                echo "Configuring connection-pooler"
+                ./zarf tools wait-for deployment "$CLUSTER_NAME-pooler" -n postgres exists
+                ./zarf tools kubectl set env -n postgres deployment "$CLUSTER_NAME-pooler" DATABASES_HOST="$CLUSTER_NAME" PGBOUNCER_LISTEN_PORT=5432
+                ./zarf tools kubectl patch deployment "$CLUSTER_NAME-pooler" -n postgres -p \
+                  '{"spec":{"template":{"metadata":{"labels":{"uds/user":"70","uds/group":"70","uds/fsgroup":"70"}}}}}'
+                ./zarf tools wait-for deployment "$CLUSTER_NAME-pooler" -n postgres
+              else
+                echo "Connection pooler not enabled."
+              fi
