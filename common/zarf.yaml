@@ -57,11 +57,11 @@ components:
               if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
                  ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
               fi
-    
+
   - name: connection-pooler
     required: true
     only:
-      flavor: unicorn 
+      flavor: unicorn
     actions:
       onDeploy:
         after:
@@ -69,7 +69,7 @@ components:
             maxTotalSeconds: 300
             cmd: |
               CLUSTER_NAME=$(./zarf tools kubectl get postgresql -n postgres -o jsonpath='{.items[0].metadata.name}')
-              
+
               if [[ -z "$CLUSTER_NAME" ]]; then
                 echo "No Postgres cluster found in 'postgres' namespace. Skipping..."
                 exit 0
