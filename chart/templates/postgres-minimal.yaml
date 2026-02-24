@@ -97,4 +97,5 @@ spec:
             secretKeyRef:
               name: postgres.pg-cluster.credentials.postgresql.acid.zalan.do
               key: password
+  enableConnectionPooler: false
 {{- end }}
