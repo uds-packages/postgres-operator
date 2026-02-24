@@ -33,7 +33,7 @@ tasks:
           - name: POOLER_ENABLED
       - description: Check status and apply fix
         cmd: |
-          if [[ "${POOLER_ENABLED}" == "false" ]]; then
+          if [ "${POOLER_ENABLED}" == "false" ]; then
             echo "PgBouncer was not deployed." && exit 0
           fi
           CLUSTER_NAME=$(./zarf tools kubectl get postgresql -n postgres -o jsonpath='{.items[0].metadata.name}')
