@@ -6,6 +6,7 @@ tasks:
     actions:
       - task: health-check
       - task: create-dbs
+      - task: configure-pgbouncer
 
   - name: create-dbs
     actions:
@@ -23,3 +24,28 @@ tasks:
             name: app.kubernetes.io/name=postgres-operator
             namespace: postgres-operator
             condition: Ready
+
+  - name: configure-pgbouncer
+    description: "Prove pgbouncer deployment isn't working, then configure and verify."
+    actions:
+      - cmd: ./zarf tools kubectl get postgresql -n postgres -o jsonpath="{.items[0].spec.enableConnectionPooler}"
+        setVariables:
+          - name: POOLER_ENABLED
+      - description: Check status and apply fix
+        cmd: |
+          if [ "${POOLER_ENABLED}" = "false" ]; then
+            echo "PgBouncer was not deployed." && exit 0
+          fi
+          CLUSTER_NAME=$(./zarf tools kubectl get postgresql -n postgres -o jsonpath="{.items[0].metadata.name}")
+          if ./zarf tools kubectl rollout status deployment/"$CLUSTER_NAME-pooler" -n postgres --timeout=5s; then
+            echo "PgBouncer already healthy!" && exit 0
+          else
+            echo "Get logs of unhealthy deployment:"
+            ./zarf tools kubectl logs -n postgres deployment/"$CLUSTER_NAME-pooler"
+          fi
+          echo "Configuring connection-pooler"
+          ./zarf tools wait-for deployment "$CLUSTER_NAME-pooler" exists -n postgres
+          ./zarf tools kubectl set env -n postgres deployment "$CLUSTER_NAME-pooler" DATABASES_HOST="$CLUSTER_NAME" PGBOUNCER_LISTEN_PORT=5432
+          ./zarf tools kubectl patch deployment "$CLUSTER_NAME-pooler" -n postgres -p \
+            "\{"spec":\{"template":\{"metadata":\{"labels":\{"uds/user":"70","uds/group":"70","uds/fsgroup":"70"\}\}\}\}\}"
+          ./zarf tools wait-for deployment "${CLUSTER_NAME}-pooler" available -n postgres --timeout=120s
