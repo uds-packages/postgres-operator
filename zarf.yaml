@@ -91,4 +91,4 @@ components:
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
       - quay.io/rfcurated/zalando/spilo-17:4.0-p3-jammy-fips-rfcurated
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
-      - quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.19-jammy-scratch-bnt-fips-rfcurated
+      - quay.io/rfcurated/prometheuscommunity/postgres-exporter:0.19.1-jammy-scratch-bnt-fips-rfcurated
