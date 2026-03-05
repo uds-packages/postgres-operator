@@ -6,7 +6,7 @@ image:
   repository: rfcurated/zalando/postgres-operator
   tag: 1.15-jammy-scratch-fips-rfcurated
 configConnectionPooler:
-  connection_pooler_image: "quay.io/rfcurated/pgbouncer:1.25.1-jammy-fips-rfcurated"
+  connection_pooler_image: "quay.io/rfcurated/zalando/pgbouncer:32-jammy-rfcurated"
 configLogicalBackup:
   logical_backup_docker_image: "quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.15-jammy-scratch-fips-rfcurated"
 configGeneral:
