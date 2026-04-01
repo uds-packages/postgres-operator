@@ -28,12 +28,16 @@ spec:
       # Custom rules for other scenarios (such as connecting to a non-default pg cluster)
       {{- range .Values.additionalNetworkAllow }}
       - direction: {{ .direction }}
+        {{- if .selector }}
         selector:
           {{ .selector | toYaml | nindent 10 }}
+        {{- end }}
         {{- if not .remoteGenerated }}
         remoteNamespace: {{ .remoteNamespace }}
+        {{- if .remoteSelector }}
         remoteSelector:
           {{ .remoteSelector | toYaml | nindent 10 }}
+        {{- end }}
         port: {{ .port }}
         {{- else }}
         remoteGenerated: {{ .remoteGenerated }}
