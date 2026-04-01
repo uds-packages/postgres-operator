@@ -8,16 +8,18 @@ metadata:
   name: pg-cluster
   namespace: postgres
 spec:
+  {{- if .Values.postgres.env }}
   env:
     {{- toYaml .Values.postgresql.env | nindent 4 }} 
+  {{- end }}
   teamId: {{ .Values.postgresql.teamId | quote }}
   volume:
     size: {{ .Values.postgresql.volume.size | quote }}
   numberOfInstances: {{ .Values.postgresql.numberOfInstances }}
   users:
-    {{- toYaml .Values.postgresql.users | nindent 4 }} # database owner
+    {{- .Values.postgresql.users | default dict | toYaml | nindent 4 }} # database owner
   databases:
-    {{- toYaml .Values.postgresql.databases | nindent 4 }}
+    {{- .Values.postgresql.databases | default dict | toYaml | nindent 4 }}
   patroni:
     initdb:
       auth-host: scram-sha-256
@@ -55,8 +57,10 @@ spec:
       {{- end }}
     {{- end }}
     version: {{ .Values.postgresql.version | quote }}
+  {{- if .Values.postgres.resources }}
   resources:
     {{- toYaml .Values.postgresql.resources | nindent 4 }}
+  {{- end }}
   {{- if ne (len .Values.postgresql.additionalVolumes) 0 }}
   additionalVolumes:
     {{- range .Values.postgresql.additionalVolumes }}
