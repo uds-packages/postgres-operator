@@ -8,7 +8,7 @@ metadata:
   name: pg-cluster
   namespace: postgres
 spec:
-  {{- if .Values.postgres.env }}
+  {{- if .Values.postgresql.env }}
   env:
     {{- toYaml .Values.postgresql.env | nindent 4 }} 
   {{- end }}
@@ -57,7 +57,7 @@ spec:
       {{- end }}
     {{- end }}
     version: {{ .Values.postgresql.version | quote }}
-  {{- if .Values.postgres.resources }}
+  {{- if .Values.postgresql.resources }}
   resources:
     {{- toYaml .Values.postgresql.resources | nindent 4 }}
   {{- end }}
