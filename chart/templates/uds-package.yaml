@@ -38,7 +38,9 @@ spec:
         remoteSelector:
           {{ .remoteSelector | toYaml | nindent 10 }}
         {{- end }}
+        {{- if .port }}
         port: {{ .port }}
+        {{- end }}
         {{- else }}
         remoteGenerated: {{ .remoteGenerated }}
         {{- end }}
