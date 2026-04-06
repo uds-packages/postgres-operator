@@ -33,8 +33,6 @@ tasks:
     actions:
       - task: create:test-bundle
       - task: deploy:test-bundle
-        with:
-          options: "--force-conflicts"
       - task: test:all
 
   - name: dev
@@ -43,8 +41,6 @@ tasks:
       - task: create-dev-package
       - task: create:test-bundle
       - task: deploy:test-bundle
-        with:
-          options: "--force-conflicts"
 
   # CI will execute the following (via uds-common/.github/workflows/callable-[test|publish].yaml) so they need to be here with these names
 
@@ -61,8 +57,6 @@ tasks:
       - task: upgrade:create-latest-tag-bundle
       - task: setup:k3d-test-cluster
       - task: deploy:test-bundle
-        with:
-          options: "--force-conflicts"
       - task: create-dev-package
       - task: create-deploy-test-bundle
 
