@@ -41,8 +41,8 @@ tasks:
       - task: create-dev-package
       - task: create:test-bundle
       - task: deploy:test-bundle
-        # with:
-        #   options: "--force-conflicts"
+        with:
+          options: "--force-conflicts"
 
   # CI will execute the following (via uds-common/.github/workflows/callable-[test|publish].yaml) so they need to be here with these names
 
