@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 configGeneral:
+  enable_crd_registration: false
   # Without enable_lazy_spilo_upgrade set to true the pods will do a rolling upgrade every resync_period. We have
   # experienced issues with database corruption when this happens. Deciding instead to do lazy upgrading which means the
   # StatefulSet is modified but a rolling update is not automatically triggered.
