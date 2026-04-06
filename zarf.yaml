@@ -24,6 +24,7 @@ components:
           - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/operatorconfigurations.yaml
           - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/postgresqls.yaml
           - https://github.com/zalando/postgres-operator/raw/v1.15.1/charts/postgres-operator/crds/postgresteams.yaml
+        serverSideApply: "false"
   - name: postgres-operator
     required: true
     only:
