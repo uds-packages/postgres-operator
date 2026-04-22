@@ -6,7 +6,7 @@ image:
   repository: zalando/postgres-operator
   tag: v1.15.1
 configConnectionPooler:
-  connection_pooler_image: "ghcr.io/cloudnative-pg/pgbouncer:1.24.1-23"
+  connection_pooler_image: "registry.opensource.zalan.do/acid/pgbouncer:master-32"
 configLogicalBackup:
   logical_backup_docker_image: "ghcr.io/zalando/postgres-operator/logical-backup:v1.15.1"
 configGeneral:
