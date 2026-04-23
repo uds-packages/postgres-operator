@@ -26,7 +26,7 @@ spec:
                 exit 1
               fi
               if ! psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" <<'SQL'
-              DO $$
+              DO $probe$
               DECLARE
                 cnt int;
               BEGIN
@@ -36,7 +36,7 @@ spec:
                 IF cnt <> 3 THEN
                   RAISE EXCEPTION 'temp-table RW probe returned %, expected 3', cnt;
                 END IF;
-              END $$;
+              END $probe$;
               SQL
               then
                 echo "ERROR: temp-table RW probe via primary pooler failed"
