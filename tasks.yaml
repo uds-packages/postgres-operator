@@ -26,7 +26,7 @@ tasks:
     actions:
       - task: create:package
         with:
-          options: "--skip-sbom"
+          options: "--skip-sbom --flavor=registry1"
 
   - name: create-deploy-test-bundle
     description: Test and validate cluster is deployed with Postgres Operator
