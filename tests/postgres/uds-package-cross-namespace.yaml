@@ -17,3 +17,15 @@ spec:
         remoteNamespace: postgres
         remoteSelector:
           cluster-name: pg-cluster
+      - direction: Egress
+        selector:
+          job-name: pooler-primary-test
+        remoteNamespace: postgres
+        remoteSelector:
+          cluster-name: pg-cluster
+      - direction: Egress
+        selector:
+          job-name: pooler-replica-test
+        remoteNamespace: postgres
+        remoteSelector:
+          cluster-name: pg-cluster
