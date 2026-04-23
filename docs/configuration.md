@@ -34,6 +34,32 @@ Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom 
       value: <value>
 ```
 
+## Connection Pooling
+
+Postgres Operator can deploy [pgbouncer](https://www.pgbouncer.org/) alongside the cluster to pool client connections, reducing backend churn for high-connection-count workloads. Poolers are deployed as separate `Deployment`s (`<cluster>-pooler` and/or `<cluster>-pooler-repl`) and exposed via matching `Service`s on port `5432`. Required network policies for the pooler pods are generated automatically when either flag below is enabled.
+
+- `postgresql.enableConnectionPooler`: deploy a pgbouncer pooler in front of the primary (RW traffic)
+- `postgresql.enableReplicaConnectionPooler`: deploy a pgbouncer pooler in front of the replicas (RO traffic)
+- `postgresql.connectionPooler`: optional map of pooler settings passed through to the `Postgresql` CR (e.g. `numberOfInstances`, `mode`, `resources`)
+
+Example:
+
+```yaml
+postgresql:
+  enableConnectionPooler: true
+  enableReplicaConnectionPooler: true
+  connectionPooler:
+    numberOfInstances: 2
+    mode: transaction
+```
+
+Clients connect through the pooler by pointing at `<cluster>-pooler.<namespace>.svc.cluster.local` (primary) or `<cluster>-pooler-repl.<namespace>.svc.cluster.local` (replicas) instead of the cluster Service.
+
+References:
+
+- [Zalando — Connection pooler](https://opensource.zalando.com/postgres-operator/docs/user.html#connection-pooler)
+- [OneUptime — PostgreSQL with the Zalando operator](https://oneuptime.com/blog/post/2026-01-21-postgresql-zalando-operator/view)
+
 ## Postgres HugePages
 
 Postgres Operator can also support HugePages by setting the following keys appropriately for your environment.  You can learn more about HugePages in Kubernetes in their [Manage HugePages documentation](https://kubernetes.io/docs/tasks/manage-hugepages/scheduling-hugepages/#api) and learn more about these fields in the [`Postgresql` custom resource reference documentation](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#cluster-manifest-reference).
