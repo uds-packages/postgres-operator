@@ -1,0 +1,103 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pooler-primary-test
+  namespace: gitlab
+  labels:
+    app: gitlab
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: pooler-primary-test
+          image: docker.io/postgres:18
+          command:
+            - sh
+            - -c
+            - |
+              echo "Testing RW path via primary pooler at $DB_HOST"
+              SEL=$(psql -qtAc "SELECT 1" -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME")
+              if [ "$SEL" != "1" ]; then
+                echo "ERROR: SELECT 1 via primary pooler returned '$SEL', expected '1'"
+                exit 1
+              fi
+              if ! psql -v ON_ERROR_STOP=1 -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" <<'SQL'
+              DO $probe$
+              DECLARE
+                cnt int;
+              BEGIN
+                CREATE TEMP TABLE pooler_rw_probe(val int) ON COMMIT DROP;
+                INSERT INTO pooler_rw_probe VALUES (1),(2),(3);
+                SELECT count(*) INTO cnt FROM pooler_rw_probe;
+                IF cnt <> 3 THEN
+                  RAISE EXCEPTION 'temp-table RW probe returned %, expected 3', cnt;
+                END IF;
+              END $probe$;
+              SQL
+              then
+                echo "ERROR: temp-table RW probe via primary pooler failed"
+                exit 1
+              fi
+              echo "SUCCESS: primary pooler RW path verified"
+              exit 0
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gitlab.gitlab.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gitlab.gitlab.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: DB_HOST
+              value: pg-cluster-pooler.postgres.svc.cluster.local
+            - name: DB_NAME
+              value: gitlabdb
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pooler-replica-test
+  namespace: gitlab
+  labels:
+    app: gitlab
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: pooler-replica-test
+          image: docker.io/postgres:18
+          command:
+            - sh
+            - -c
+            - |
+              echo "Verifying replica pooler routes to a standby at $DB_HOST"
+              IN_RECOVERY=$(psql -tAc "SELECT pg_is_in_recovery()" -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME")
+              if [ "$IN_RECOVERY" != "t" ]; then
+                echo "ERROR: replica pooler routed to non-standby (pg_is_in_recovery='$IN_RECOVERY', expected 't')"
+                exit 1
+              fi
+              echo "SUCCESS: replica pooler routed to a standby (pg_is_in_recovery=t)"
+              exit 0
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gitlab.gitlab.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gitlab.gitlab.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: DB_HOST
+              value: pg-cluster-pooler-repl.postgres.svc.cluster.local
+            - name: DB_NAME
+              value: gitlabdb

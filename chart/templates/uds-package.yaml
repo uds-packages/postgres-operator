@@ -18,6 +18,15 @@ spec:
         remoteNamespace: postgres
         remoteSelector:
           cluster-name: pg-cluster
+
+      {{- if or (.Values.postgresql.enableConnectionPooler | default false) (.Values.postgresql.enableReplicaConnectionPooler | default false) }}
+      - direction: Egress
+        selector:
+          app.kubernetes.io/name: postgres-operator
+        remoteNamespace: postgres
+        remoteSelector:
+          application: db-connection-pooler
+      {{- end }}
       {{- end }}
 
       - direction: Egress

@@ -41,7 +41,7 @@ components:
             maxTotalSeconds: 300
             cmd: |
               if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
-                 ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+                 ./zarf tools wait-for resource packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
               fi
           - description: Postgres Operator to be Healthy
             maxTotalSeconds: 90
@@ -55,5 +55,5 @@ components:
             maxTotalSeconds: 300
             cmd: |
               if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
-                 ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+                 ./zarf tools wait-for resource postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
               fi

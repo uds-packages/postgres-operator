@@ -1,0 +1,119 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/refs/heads/main/tasks.schema.json
+
+# Registry1-flavor-only shim for the Zalando postgres-operator connection pooler.
+# Justification: IB pgbouncer images run as UID 997, but the operator hardcodes pooler pods to
+# run as UID 100, so the pooler cannot write its config, logs, or pidfile. This patch adds
+# emptyDir volumes and a seed init container to work around the UID mismatch.
+# furthermore, auth_mode is hardcoded to plain in the operator's templates,
+# so the init container also patches it to scram-sha-256.
+
+tasks:
+  - name: patch-pooler-deployments
+    description: Shim Zalando pooler Deployments for Iron Bank pgbouncer UID mismatch
+    actions:
+      - description: Strategic-merge emptyDir + seed-templates initContainer into pooler Deployments
+        shell:
+          darwin: bash
+          linux: bash
+        cmd: |
+          set -e
+
+          if ! uds zarf tools kubectl get postgresql pg-cluster -n postgres >/dev/null 2>&1; then
+            echo "pg-cluster Postgresql CR not present; skipping pooler shim"
+            exit 0
+          fi
+
+          master=$(uds zarf tools kubectl get postgresql pg-cluster -n postgres \
+            -o jsonpath='{.spec.enableConnectionPooler}' 2>/dev/null)
+          repl=$(uds zarf tools kubectl get postgresql pg-cluster -n postgres \
+            -o jsonpath='{.spec.enableReplicaConnectionPooler}' 2>/dev/null)
+
+          if [ "$master" != "true" ] && [ "$repl" != "true" ]; then
+            echo "Connection pooler not enabled on Postgresql CR; skipping pooler shim"
+            exit 0
+          fi
+
+          patch_pooler() {
+            local dep="$1"
+
+            echo "Waiting for Deployment ${dep} to be created by operator..."
+            for _ in $(seq 1 60); do
+              if uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null 2>&1; then
+                break
+              fi
+              sleep 2
+            done
+            uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null
+
+            local image
+            image=$(uds zarf tools kubectl get deploy "${dep}" -n postgres \
+              -o jsonpath='{.spec.template.spec.containers[0].image}')
+            echo "Patching ${dep} (init container image: ${image})"
+
+            local patch="spec:
+            template:
+              spec:
+                volumes:
+                  - name: pgbouncer-etc
+                    emptyDir:
+                      medium: Memory
+                  - name: pgbouncer-log
+                    emptyDir:
+                      medium: Memory
+                  - name: pgbouncer-run
+                    emptyDir:
+                      medium: Memory
+                initContainers:
+                  - name: seed-pgbouncer-etc
+                    image: ${image}
+                    command:
+                      - sh
+                      - -c
+                      - |
+                        # 1 - Copy Zalando's templates into the emptyDir
+                        cp /etc/pgbouncer/auth_file.txt.tmpl /etc/pgbouncer/pgbouncer.ini.tmpl /seed/
+                        # 2 - Rewrite auth_type to scram-sha-256 so pgbouncer can pass SCRAM secrets through to postgres
+                        sed -i 's/^auth_type = plain.*/auth_type = scram-sha-256/' /seed/pgbouncer.ini.tmpl
+                    volumeMounts:
+                      - name: pgbouncer-etc
+                        mountPath: /seed
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop: [ALL]
+                      runAsUser: 100
+                      runAsGroup: 101
+                      runAsNonRoot: true
+                containers:
+                  - name: connection-pooler
+                    volumeMounts:
+                      - name: pgbouncer-etc
+                        mountPath: /etc/pgbouncer
+                      - name: pgbouncer-log
+                        mountPath: /var/log/pgbouncer
+                      - name: pgbouncer-run
+                        mountPath: /var/run/pgbouncer"
+
+            uds zarf tools kubectl patch deploy "${dep}" -n postgres \
+              --type=strategic --patch="${patch}"
+          }
+
+          if [ "$master" = "true" ]; then
+            patch_pooler pg-cluster-pooler
+          fi
+          if [ "$repl" = "true" ]; then
+            patch_pooler pg-cluster-pooler-repl
+          fi
+
+      - description: Wait for pooler Deployments to become Available
+        maxTotalSeconds: 180
+        cmd: |
+          set -e
+          for dep in pg-cluster-pooler pg-cluster-pooler-repl; do
+            if uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null 2>&1; then
+              uds zarf tools kubectl rollout status deploy "${dep}" -n postgres --timeout=180s
+            fi
+          done
