@@ -7,7 +7,7 @@
 # Justification: IB pgbouncer images run as UID 997, but the operator hardcodes pooler pods to
 # run as UID 100, so the pooler cannot write its config, logs, or pidfile. This patch adds
 # emptyDir volumes and a seed init container to work around the UID mismatch.
-# furthermore, auth_mode is hardcoded to plain in the operator's templates, 
+# furthermore, auth_mode is hardcoded to plain in the operator's templates,
 # so the init container also patches it to scram-sha-256.
 
 tasks:
@@ -53,9 +53,7 @@ tasks:
               -o jsonpath='{.spec.template.spec.containers[0].image}')
             echo "Patching ${dep} (init container image: ${image})"
 
-            uds zarf tools kubectl patch deploy "${dep}" -n postgres \
-              --type=strategic --patch-file=/dev/stdin <<EOF
-          spec:
+            local patch="spec:
             template:
               spec:
                 volumes:
@@ -75,9 +73,9 @@ tasks:
                       - sh
                       - -c
                       - |
-                        # 1 - Copy Zalando's templates into the emptyDir, then rewrite
+                        # 1 - Copy Zalando's templates into the emptyDir
                         cp /etc/pgbouncer/auth_file.txt.tmpl /etc/pgbouncer/pgbouncer.ini.tmpl /seed/
-                        # 2 - Patch the auth_type in the copied pgbouncer.ini.tmpl to scram-sha-256
+                        # 2 - Rewrite auth_type to scram-sha-256 so pgbouncer can pass SCRAM secrets through to postgres
                         sed -i 's/^auth_type = plain.*/auth_type = scram-sha-256/' /seed/pgbouncer.ini.tmpl
                     volumeMounts:
                       - name: pgbouncer-etc
@@ -97,8 +95,10 @@ tasks:
                       - name: pgbouncer-log
                         mountPath: /var/log/pgbouncer
                       - name: pgbouncer-run
-                        mountPath: /var/run/pgbouncer
-          EOF
+                        mountPath: /var/run/pgbouncer"
+
+            uds zarf tools kubectl patch deploy "${dep}" -n postgres \
+              --type=strategic --patch="${patch}"
           }
 
           if [ "$master" = "true" ]; then
