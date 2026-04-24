@@ -55,6 +55,20 @@ postgresql:
 
 Clients connect through the pooler by pointing at `<cluster>-pooler.<namespace>.svc.cluster.local` (primary) or `<cluster>-pooler-repl.<namespace>.svc.cluster.local` (replicas) instead of the cluster Service.
 
+### Registry1 pooler shim
+
+The `registry1` flavor consumes the Iron Bank pgbouncer image, which diverges from upstream Zalando in two ways the operator does not expose via configuration:
+
+1. The `pgbouncer` user is built as UID `997`, but the Zalando operator hardcodes the pooler pod to `runAsUser: 100`. As a result the entrypoint cannot write the self-signed TLS cert to `/etc/pgbouncer/`, the log to `/var/log/pgbouncer/`, or the pidfile to `/var/run/pgbouncer/`.
+2. The baked-in `pgbouncer.ini.tmpl` hardcodes `auth_type = plain`, which fails against postgres's default `scram-sha-256` encryption (pgbouncer cannot replay SCRAM secrets returned by `auth_query` when operating in plain mode).
+
+To keep the pooler usable without rebuilding the image or adding a Pepr mutation, the `registry1` component in `zarf.yaml` runs [`tasks/registry1-pooler-patch.yaml`](../tasks/registry1-pooler-patch.yaml) as an `onDeploy.after` action. For each operator-managed pooler Deployment it strategic-merge patches in:
+
+- three in-memory `emptyDir` volumes mounted at `/etc/pgbouncer`, `/var/log/pgbouncer`, and `/var/run/pgbouncer` (writable under the pod's `fsGroup: 103`)
+- a `seed-pgbouncer-etc` init container that copies Zalando's `.tmpl` files into the emptyDir and rewrites `auth_type = plain` to `auth_type = scram-sha-256` before the main container renders them via `envsubst`
+
+The operator's pooler sync does not compare `volumes`, `volumeMounts`, or `initContainers`, so the patch survives its reconcile loop. The `upstream` and `unicorn` flavors ship pgbouncer at UID `100` (and their tests have not surfaced the auth issue yet) and do not run the shim.
+
 References:
 
 - [Zalando — Connection pooler](https://opensource.zalando.com/postgres-operator/docs/user.html#connection-pooler)
