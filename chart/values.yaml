@@ -17,6 +17,12 @@ postgresql:
   additionalVolumes: []
   env: []
 
+# Connection pooler options
+# Ref: https://opensource.zalando.com/postgres-operator/docs/user.html#connection-pooler
+enableConnectionPooler: false
+enableReplicaConnectionPooler: false
+connectionPooler: {}
+
 # Example values for postgresql
 #
 # postgresql:

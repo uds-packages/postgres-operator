@@ -25,19 +25,10 @@ spec:
       - direction: Egress
         remoteGenerated: IntraNamespace
 
-    {{- if kindIs "slice" .Values.postgresql.ingress -}}
-      {{- range .Values.postgresql.ingress }}
-      - direction: Ingress
-        selector:
-          cluster-name: pg-cluster
-        {{ . | toYaml | nindent 8 }}
-      {{- end }}
-    {{- else }}
-      - direction: Ingress
-        selector:
-          cluster-name: pg-cluster
-        {{- .Values.postgresql.ingress | toYaml | nindent 8 }}
-    {{- end }}
+      {{- include "uds-postgres.ingressRules" (dict
+          "ingress" .Values.postgresql.ingress
+          "selector" (dict "cluster-name" "pg-cluster")
+      ) | nindent 6 }}
 
       - direction: Ingress
         selector:
@@ -50,4 +41,26 @@ spec:
         selector:
           cluster-name: pg-cluster
         remoteGenerated: KubeAPI
+
+      {{- /* Pooler (pgbouncer) traffic. Zalando labels pooler pods with
+             `application=db-connection-pooler`. IntraNamespace rules above
+             already cover pooler <-> spilo traffic within this namespace. */}}
+      {{- if or (.Values.postgresql.enableConnectionPooler | default false) (.Values.postgresql.enableReplicaConnectionPooler | default false) }}
+      {{- include "uds-postgres.ingressRules" (dict
+          "ingress" .Values.postgresql.ingress
+          "selector" (dict "application" "db-connection-pooler")
+      ) | nindent 6 }}
+
+      - direction: Ingress
+        selector:
+          application: db-connection-pooler
+        remoteNamespace: {{ .Release.Namespace }}
+        remoteSelector:
+          app.kubernetes.io/name: postgres-operator
+
+      - direction: Egress
+        selector:
+          application: db-connection-pooler
+        remoteGenerated: KubeAPI
+      {{- end }}
 {{- end }}

@@ -29,8 +29,8 @@ components:
     required: true
     only:
       flavor: registry1
-      cluster:
-        architecture: amd64
+      # cluster:
+      #   architecture: amd64
     import:
       path: common
     charts:
@@ -40,6 +40,17 @@ components:
       - name: uds-postgres-config
         valuesFiles:
           - ./values/registry1-config-values.yaml
+    actions:
+      onDeploy:
+        after:
+          # The Iron Bank pgbouncer image bakes /etc/pgbouncer, /var/log/pgbouncer,
+          # and /var/run/pgbouncer owned by pgbouncer:pgbouncer (UID 997:997), but
+          # the Zalando operator hardcodes the pooler pod's runAsUser=100 — so the
+          # pgbouncer entrypoint cannot write its TLS cert, log, or pidfile. Shim
+          # the operator-managed pooler Deployments with emptyDir mounts + a seed
+          # init container. See tasks/registry1-pooler-patch.yaml for rationale.
+          - description: Shim Iron Bank pgbouncer directory permissions on pooler Deployments
+            cmd: uds run -f tasks/registry1-pooler-patch.yaml patch-pooler-deployments --no-progress
     images:
       # Iron Bank
       - registry1.dso.mil/ironbank/opensource/zalando/postgres-operator:v1.15.0
@@ -66,7 +77,7 @@ components:
     images:
       - ghcr.io/zalando/postgres-operator:v1.15.1
       - ghcr.io/zalando/postgres-operator/logical-backup:v1.15.1
-      - ghcr.io/cloudnative-pg/pgbouncer:1.24.1-23
+      - registry.opensource.zalan.do/acid/pgbouncer:master-32
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
       - ghcr.io/zalando/spilo-17:4.0-p3
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint

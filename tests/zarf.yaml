@@ -36,6 +36,45 @@ components:
                 namespace: gitlab
                 condition: "'{.status.succeeded}'=1"
 
+  - name: test-connection-pooler
+    required: true
+    manifests:
+      - name: pooler-connection-test
+        files:
+          - postgres/pooler-connection-test.yaml
+    images:
+      - docker.io/postgres:18
+    actions:
+      onDeploy:
+        before:
+          - wait:
+              cluster:
+                kind: Deployment
+                name: pg-cluster-pooler
+                namespace: postgres
+                condition: available
+            maxTotalSeconds: 300
+          - wait:
+              cluster:
+                kind: Deployment
+                name: pg-cluster-pooler-repl
+                namespace: postgres
+                condition: available
+            maxTotalSeconds: 300
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: pooler-primary-test
+                namespace: gitlab
+                condition: "'{.status.succeeded}'=1"
+          - wait:
+              cluster:
+                kind: Job
+                name: pooler-replica-test
+                namespace: gitlab
+                condition: "'{.status.succeeded}'=1"
+
   - name: test-bad-password
     required: true
     manifests:

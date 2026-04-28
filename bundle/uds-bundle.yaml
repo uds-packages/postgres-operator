@@ -24,6 +24,17 @@ packages:
                 volume:
                   size: "10Gi"
                 numberOfInstances: 2
+                enableConnectionPooler: true
+                enableReplicaConnectionPooler: true
+                connectionPooler:
+                  numberOfInstances: 1
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 100Mi
+                    limits:
+                      cpu: 500m
+                      memory: 500Mi
                 users:
                   gitlab.gitlab: []  # database owner
                   sonarqube.sonarqube: []  # database owner
