@@ -5,7 +5,7 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/uds-packages/postgres-operator/release.yaml)](https://github.com/uds-packages/postgres-operator/actions/workflows/release.yaml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator/badge)](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator)
 
-This package is designed for use as part of a [UDS Software Factory](https://github.com/defenseunicorns/uds-software-factory) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
+This package is designed for use as part of a [UDS Bundle](https://docs.defenseunicorns.com/core/concepts/configuration--packaging/bundles/) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
 
 > The Postgres Operator is a software tool that automates the deployment and management of PostgreSQL databases on Kubernetes, simplifying the process of setting up and maintaining highly available and scalable PostgreSQL clusters.
 
