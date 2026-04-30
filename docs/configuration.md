@@ -4,7 +4,7 @@ Postgres Operator is configured through the upstream [Zalando Postgres Operator 
 
 ## Networking
 
-Network policies are controlled via the `uds-postgres-config` chart and follow [similar networking patterns as the Reference Package](https://github.com/uds-packages/reference-package/blob/main/chart/templates/uds-package.yaml#L48). Because Postgres does not interact with external resources like object storage it only implements `custom` networking for the `postgres-operator` namespace:
+Network policies are controlled via the `uds-postgres-config` chart and follow [similar networking patterns as the Reference Package](https://github.com/uds-packages/reference-package/blob/main/chart/templates/uds-package.yaml). Because Postgres does not interact with external resources like object storage it only implements `custom` networking for the `postgres-operator` namespace:
 
 - `additionalNetworkAllow`: sets custom network policies for the `postgres-operator` namespace (as a break glass in case you deploy your own postgres cluster custom resources - see below)
 
@@ -20,7 +20,7 @@ Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom 
 - `postgresql.databases`: The database names to create and the users they map to (i.e. `gitlabdb: gitlab.gitlab`)
 - `postgresql.extensions`: A map of database names to lists of extensions to enable for that database (i.e. `mydb: ["postgis", "hstore"]`)
 - `postgresql.version`: The version of Postgres to run (i.e. `14`)
-- `postgresql.ingress`: A list of ingress entries to create for this cluster (follows the [custom networking definition](https://github.com/uds-packages/reference-package/blob/main/chart/templates/uds-package.yaml#L48) except for `direction` which is always `Ingress` and `selector` which is always `cluster-name: pg-cluster`)
+- `postgresql.ingress`: A list of ingress entries to create for this cluster (follows the [custom networking definition](https://github.com/uds-packages/reference-package/blob/main/chart/templates/uds-package.yaml) except for `direction` which is always `Ingress` and `selector` which is always `cluster-name: pg-cluster`)
 - `postgresql.resources`: A Kubernetes Pod resource specification to define requests and limits
 - `postgresql.additionalVolumes`: A list of additional volumes to map into the Postgres container if needed (see below)
 - `postgresql.tls`: TLS configuration for the Postgres cluster to use (follows the [`tls` section of the Zalando Postgres CR](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#custom-tls-certificates))
