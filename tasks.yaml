@@ -20,7 +20,7 @@ tasks:
       - task: create-dev-package
       - task: setup:k3d-test-cluster
       - task: create-deploy-test-bundle
-# 
+
   - name: create-dev-package
     description: Create the Postgres Operator package
     actions:
@@ -42,7 +42,7 @@ tasks:
       - task: create:test-bundle
       - task: deploy:test-bundle
 
-# CI will execute the following (via uds-common/.github/workflows/callable-[test|publish].yaml) so they need to be here with these names
+  # CI will execute the following (via uds-common/.github/workflows/callable-[test|publish].yaml) so they need to be here with these names
 
   - name: test-install
     description: Test the health of a Postgres Operator deployment
