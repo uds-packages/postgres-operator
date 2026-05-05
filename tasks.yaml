@@ -20,7 +20,7 @@ tasks:
       - task: create-dev-package
       - task: setup:k3d-test-cluster
       - task: create-deploy-test-bundle
-
+#
   - name: create-dev-package
     description: Create the Postgres Operator package
     actions:
