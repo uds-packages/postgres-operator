@@ -15,4 +15,4 @@ permissions:
 
 jobs:
   validate:
-    uses: defenseunicorns/uds-common/.github/workflows/callable-commitlint.yaml@update-cgr-creds # testing
+    uses: defenseunicorns/uds-common/.github/workflows/callable-commitlint.yaml@chainguard-creds # testing

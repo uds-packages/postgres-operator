@@ -27,7 +27,7 @@ jobs:
         exclude:
           - flavor: registry1
             architecture: arm64
-    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@update-cgr-creds # testing
+    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@chainguard-creds # testing
     with:
       flavor: ${{ matrix.flavor }}
       options: --set BASE_REPO="ghcr.io/uds-packages"

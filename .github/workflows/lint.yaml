@@ -15,5 +15,5 @@ permissions:
 
 jobs:
   validate:
-    uses: defenseunicorns/uds-common/.github/workflows/callable-lint.yaml@update-cgr-creds # testing
+    uses: defenseunicorns/uds-common/.github/workflows/callable-lint.yaml@chainguard-creds # testing
     secrets: inherit

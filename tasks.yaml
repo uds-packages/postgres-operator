@@ -3,15 +3,15 @@
 
 includes:
   - test: ./tasks/test.yaml
-  - create: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/create.yaml
-  - publish: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/publish.yaml
-  - lint: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/lint.yaml
-  - pull: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/pull.yaml
-  - deploy: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/deploy.yaml
-  - setup: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/setup.yaml
-  - actions: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/actions.yaml
-  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/badge.yaml
-  - upgrade: https://raw.githubusercontent.com/defenseunicorns/uds-common/update-cgr-creds/tasks/upgrade.yaml
+  - create: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/create.yaml
+  - publish: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/publish.yaml
+  - lint: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/lint.yaml
+  - pull: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/pull.yaml
+  - deploy: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/deploy.yaml
+  - setup: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/setup.yaml
+  - actions: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/actions.yaml
+  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/badge.yaml
+  - upgrade: https://raw.githubusercontent.com/defenseunicorns/uds-common/chainguard-creds/tasks/upgrade.yaml
 
 tasks:
   - name: default

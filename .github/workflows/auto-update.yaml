@@ -20,5 +20,5 @@ concurrency:
 
 jobs:
   auto-update:
-    uses: defenseunicorns/uds-common/.github/workflows/callable-auto-update.yaml@update-cgr-creds # testing
+    uses: defenseunicorns/uds-common/.github/workflows/callable-auto-update.yaml@chainguard-creds # testing
     secrets: inherit # Inherits all secrets from the parent workflow.
