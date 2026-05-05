@@ -1,18 +1,18 @@
-# # Copyright 2024 Defense Unicorns
-# # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-# name: PR Title Check
+name: PR Title Check
 
-# on:
-#   pull_request:
-#     branches: [main]
-#     types: [milestoned, opened, edited, synchronize]
+on:
+  pull_request:
+    branches: [main]
+    types: [milestoned, opened, edited, synchronize]
 
-# # Permissions for the GITHUB_TOKEN used by the workflow.
-# permissions:
-#   contents: read # Allows reading the content of the repository.
-#   pull-requests: read # Allows reading pull requests
+# Permissions for the GITHUB_TOKEN used by the workflow.
+permissions:
+  contents: read # Allows reading the content of the repository.
+  pull-requests: read # Allows reading pull requests
 
-# jobs:
-#   validate:
-#     uses: defenseunicorns/uds-common/.github/workflows/callable-commitlint.yaml@update-cgr-creds # testing
+jobs:
+  validate:
+    uses: defenseunicorns/uds-common/.github/workflows/callable-commitlint.yaml@update-cgr-creds # testing

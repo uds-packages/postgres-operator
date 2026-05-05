@@ -1,67 +1,67 @@
-# # Copyright 2024 Defense Unicorns
-# # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-# name: Test
+name: Test
 
-# on:
-#   # This workflow is triggered on pull requests to the main branch.
-#   pull_request:
-#     # milestoned is added here as a way to retrigger workflows that are stuck or otherwise didn't run correctly
-#     types: [milestoned, opened, reopened, synchronize]
+on:
+  # This workflow is triggered on pull requests to the main branch.
+  pull_request:
+    # milestoned is added here as a way to retrigger workflows that are stuck or otherwise didn't run correctly
+    types: [milestoned, opened, reopened, synchronize]
 
-# # Permissions for the GITHUB_TOKEN used by the workflow.
-# permissions:
-#   contents: read # Allows reading the content of the repository.
-#   packages: read # Allows reading the content of the repository's packages.
-#   id-token: write
-#   pull-requests: read
+# Permissions for the GITHUB_TOKEN used by the workflow.
+permissions:
+  contents: read # Allows reading the content of the repository.
+  packages: read # Allows reading the content of the repository's packages.
+  id-token: write
+  pull-requests: read
 
-# # Abort prior jobs in the same workflow / PR
-# concurrency:
-#   group: test-${{ github.ref }}
-#   cancel-in-progress: true
+# Abort prior jobs in the same workflow / PR
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
-# jobs:
-#   check-flavor:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+jobs:
+  check-flavor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-#       - name: test-flavor
-#         uses: defenseunicorns/uds-common/.github/actions/test-flavor@update-cgr-creds # testing
-#         id: test-flavor
-#     outputs:
-#       upgrade-flavors: ${{ steps.test-flavor.outputs.upgrade-flavors }}
+      - name: test-flavor
+        uses: defenseunicorns/uds-common/.github/actions/test-flavor@update-cgr-creds # testing
+        id: test-flavor
+    outputs:
+      upgrade-flavors: ${{ steps.test-flavor.outputs.upgrade-flavors }}
 
-#   validate:
-#     needs: check-flavor
-#     strategy:
-#       fail-fast: true
-#       matrix:
-#         type: [install, upgrade]
-#         flavor: [upstream, registry1, unicorn]
-#     uses: defenseunicorns/uds-common/.github/workflows/callable-test.yaml@update-cgr-creds # testing
-#     with:
-#       options: --set BASE_REPO="ghcr.io/uds-packages"
-#       upgrade-flavors: ${{ needs.check-flavor.outputs.upgrade-flavors }}
-#       flavor: ${{ matrix.flavor }}
-#       type: ${{ matrix.type }}
-#       runsOn: appstore-4-core-amd64
-#     secrets: inherit # Inherits all secrets from the parent workflow.
+  validate:
+    needs: check-flavor
+    strategy:
+      fail-fast: true
+      matrix:
+        type: [install, upgrade]
+        flavor: [upstream, registry1, unicorn]
+    uses: defenseunicorns/uds-common/.github/workflows/callable-test.yaml@update-cgr-creds # testing
+    with:
+      options: --set BASE_REPO="ghcr.io/uds-packages"
+      upgrade-flavors: ${{ needs.check-flavor.outputs.upgrade-flavors }}
+      flavor: ${{ matrix.flavor }}
+      type: ${{ matrix.type }}
+      runsOn: appstore-4-core-amd64
+    secrets: inherit # Inherits all secrets from the parent workflow.
 
-#   verify-test:
-#     runs-on: ubuntu-latest
-#     needs: validate
-#     if: always()
-#     steps:
-#       - name: Check validate result
-#         run: |
-#           echo "validate result: ${{ needs.validate.result }}"
+  verify-test:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: always()
+    steps:
+      - name: Check validate result
+        run: |
+          echo "validate result: ${{ needs.validate.result }}"
 
-#           if [ "${{ needs.validate.result }}" != "success" ]; then
-#             echo "One or more tests failed."
-#             exit 1
-#           fi
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "One or more tests failed."
+            exit 1
+          fi
 
-#           echo "All tests passed successfully!"
+          echo "All tests passed successfully!"
