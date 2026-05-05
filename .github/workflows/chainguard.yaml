@@ -1,0 +1,25 @@
+# Copyright 2024-2026 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+name: Test Chainguard Login
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  chainguard-login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Chainguard
+        uses: chainguard-dev/setup-chainctl@2cddd35a2f120d9973e58094dc6878c93cf58c28 # v0.5.1
+        with:
+          identity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      # - name: Pull a cgr.dev image to verify auth
+      #   run: docker pull cgr.dev/chainguard/static:latest
