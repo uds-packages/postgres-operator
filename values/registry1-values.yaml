@@ -11,4 +11,5 @@ configLogicalBackup:
   logical_backup_docker_image: "registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.15.1"
 # Note there is not a spilo image in registry1
 configGeneral:
-  docker_image: "ghcr.io/zalando/spilo-17:4.0-p3"
+  docker_image: "registry1.dso.mil/ironbank/afdco/spilo-17:v4.0-p3-22.04-pro-stig-1"
+
