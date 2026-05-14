@@ -5,7 +5,6 @@
 
 # Unicorn-flavor-only shim for the Zalando postgres-operator connection pooler.
 # This patch reproduces the upstream Zalando entrypoint behavior out-of-band:
-
 # auth_type is set to scram-sha-256 (Postgres 17 default); upstream's template
 # hardcodes md5 which fails against modern Postgres.
 
