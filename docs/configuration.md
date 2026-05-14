@@ -67,7 +67,21 @@ To keep the pooler usable without rebuilding the image or adding a Pepr mutation
 - three in-memory `emptyDir` volumes mounted at `/etc/pgbouncer`, `/var/log/pgbouncer`, and `/var/run/pgbouncer` (writable under the pod's `fsGroup: 103`)
 - a `seed-pgbouncer-etc` init container that copies Zalando's `.tmpl` files into the emptyDir and rewrites `auth_type = plain` to `auth_type = scram-sha-256` before the main container renders them via `envsubst`
 
-The operator's pooler sync does not compare `volumes`, `volumeMounts`, or `initContainers`, so the patch survives its reconcile loop. The `upstream` and `unicorn` flavors ship pgbouncer at UID `100` (and their tests have not surfaced the auth issue yet) and do not run the shim.
+The operator's pooler sync does not compare `volumes`, `volumeMounts`, or `initContainers`, so the patch survives its reconcile loop. The `upstream` flavor ships the Zalando-curated pgbouncer image and does not need the shim.
+
+### Unicorn pooler shim
+
+The `unicorn` flavor consumes `cgr.dev/defenseunicorns.com/pgbouncer`, which is a generic upstream Chainguard pgbouncer image rather than a Zalando rebuild. Two consequences the operator does not expose via configuration:
+
+1. The image's `ENTRYPOINT` is `/usr/bin/pgbouncer` with `CMD` `["--help"]` and ships no `/etc/pgbouncer/*.tmpl` files or entrypoint script. The Zalando operator leaves the pooler container's `command`/`args` unset and depends on the image entrypoint to render config from `PGHOST`/`PGPORT`/`PGUSER`/`CONNECTION_POOLER_*` env vars and exec pgbouncer; with this image the pod just runs `pgbouncer --help` and exits.
+2. The image is fully minimal (only the `pgbouncer` binary — no `sh`, `openssl`, or `envsubst`), so the rendering cannot be done inside the main container.
+
+To keep the pooler usable without rebuilding the image or adding a Pepr mutation, the `unicorn` component in `zarf.yaml` runs [`tasks/unicorn-pooler-patch.yaml`](../tasks/unicorn-pooler-patch.yaml) as an `onDeploy.after` action. For each operator-managed pooler Deployment it strategic-merge patches in:
+
+- three in-memory `emptyDir` volumes mounted at `/etc/pgbouncer`, `/var/log/pgbouncer`, and `/var/run/pgbouncer` (writable under the pod's `fsGroup: 103`)
+- a `seed-pgbouncer-etc` init container that reuses the unicorn flavor's spilo image (already pulled for the postgres pods, has `sh` + `openssl`) to render `pgbouncer.ini`, `auth_file.txt`, and a self-signed TLS cert into the emptyDir — replicating upstream Zalando's `entrypoint.sh`, with `auth_type = scram-sha-256` (PG17 default) and without the Zalando downstream-fork-only `stats_users_prefix` directive that vanilla pgbouncer rejects
+- the operator-set env block replicated onto the init container (extracted live via `kubectl jsonpath`) so the rendered config matches the configured `pool_mode`/sizes/ports; `PGUSER` and `PGPASSWORD` are preserved as `secretKeyRef`s so the password never lands in plaintext in the Deployment spec
+- a `command` override on the main container to `["/usr/bin/pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]`
 
 References:
 

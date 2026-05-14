@@ -1,0 +1,250 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/refs/heads/main/tasks.schema.json
+
+# Unicorn-flavor-only shim for the Zalando postgres-operator connection pooler.
+# This patch reproduces the upstream Zalando entrypoint behavior out-of-band:
+
+# auth_type is set to scram-sha-256 (Postgres 17 default); upstream's template
+# hardcodes md5 which fails against modern Postgres.
+
+tasks:
+  - name: patch-pooler-deployments
+    description: Shim Zalando pooler Deployments for CGR pgbouncer entrypoint mismatch
+    actions:
+      - description: Strategic-merge emptyDir + render-config initContainer into pooler Deployments
+        shell:
+          darwin: bash
+          linux: bash
+        cmd: |
+          set -e
+
+          if ! uds zarf tools kubectl get postgresql pg-cluster -n postgres >/dev/null 2>&1; then
+            echo "pg-cluster Postgresql CR not present; skipping pooler shim"
+            exit 0
+          fi
+
+          master=$(uds zarf tools kubectl get postgresql pg-cluster -n postgres \
+            -o jsonpath='{.spec.enableConnectionPooler}' 2>/dev/null)
+          repl=$(uds zarf tools kubectl get postgresql pg-cluster -n postgres \
+            -o jsonpath='{.spec.enableReplicaConnectionPooler}' 2>/dev/null)
+
+          if [ "$master" != "true" ] && [ "$repl" != "true" ]; then
+            echo "Connection pooler not enabled on Postgresql CR; skipping pooler shim"
+            exit 0
+          fi
+
+          # Spilo image is already required by the unicorn flavor for postgres pods,
+          # so re-using it here adds no new image pull. It provides sh + openssl,
+          # which the minimal CGR pgbouncer image does not.
+          init_image=$(uds zarf tools kubectl get postgresql pg-cluster -n postgres \
+            -o jsonpath='{.spec.dockerImage}')
+          if [ -z "$init_image" ]; then
+            init_image="cgr.dev/defenseunicorns.com/spilo-17:4.1.2"
+          fi
+
+          # Pull a single env value (plain .value) from the operator-managed pooler
+          # container so the init container renders config using the same values
+          # the operator already computed (mode, sizes, ports).
+          get_env_value() {
+            local dep_name="$1" env_name="$2"
+            uds zarf tools kubectl get deploy "${dep_name}" -n postgres \
+              -o jsonpath="{.spec.template.spec.containers[?(@.name=='connection-pooler')].env[?(@.name=='${env_name}')].value}"
+          }
+
+          # Pull a secretKeyRef.name for a .valueFrom env entry (PGUSER, PGPASSWORD).
+          get_env_secret_name() {
+            local dep_name="$1" env_name="$2"
+            uds zarf tools kubectl get deploy "${dep_name}" -n postgres \
+              -o jsonpath="{.spec.template.spec.containers[?(@.name=='connection-pooler')].env[?(@.name=='${env_name}')].valueFrom.secretKeyRef.name}"
+          }
+
+          patch_pooler() {
+            local dep="$1"
+
+            echo "Waiting for Deployment ${dep} to be created by operator..."
+            for _ in $(seq 1 60); do
+              if uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null 2>&1; then
+                break
+              fi
+              sleep 2
+            done
+            uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null
+
+            # Resolve operator-set env values up front so we can embed them in
+            # the init container's env block. Secret refs are kept as refs so
+            # the password never appears in plaintext in the Deployment spec.
+            local pghost pgport pgschema cp_port cp_mode cp_default cp_min cp_reserve cp_maxclient cp_maxdb
+            local pguser_secret pgpass_secret
+            pghost=$(get_env_value "${dep}" PGHOST)
+            pgport=$(get_env_value "${dep}" PGPORT)
+            pgschema=$(get_env_value "${dep}" PGSCHEMA)
+            cp_port=$(get_env_value "${dep}" CONNECTION_POOLER_PORT)
+            cp_mode=$(get_env_value "${dep}" CONNECTION_POOLER_MODE)
+            cp_default=$(get_env_value "${dep}" CONNECTION_POOLER_DEFAULT_SIZE)
+            cp_min=$(get_env_value "${dep}" CONNECTION_POOLER_MIN_SIZE)
+            cp_reserve=$(get_env_value "${dep}" CONNECTION_POOLER_RESERVE_SIZE)
+            cp_maxclient=$(get_env_value "${dep}" CONNECTION_POOLER_MAX_CLIENT_CONN)
+            cp_maxdb=$(get_env_value "${dep}" CONNECTION_POOLER_MAX_DB_CONN)
+            pguser_secret=$(get_env_secret_name "${dep}" PGUSER)
+            pgpass_secret=$(get_env_secret_name "${dep}" PGPASSWORD)
+
+            if [ -z "${pghost}" ] || [ -z "${pguser_secret}" ] || [ -z "${pgpass_secret}" ]; then
+              echo "Failed to resolve required env from ${dep}; aborting shim" >&2
+              return 1
+            fi
+
+            echo "Patching ${dep} (init image: ${init_image}, pooler creds secret: ${pguser_secret})"
+
+            # NOTE on escaping:
+            #   - The patch is a single-quoted bash string, so \$1 / \$PGHOST / etc.
+            #     are preserved verbatim.
+            #   - K8s only substitutes \$(VAR) and reduces \$\$ -> \$ on command/args.
+            #     ${VAR} passes through unchanged for sh to expand at runtime.
+            #   - Inside the sh heredocs (INI / AUTH) we use ${VAR} for substitution
+            #     and \$1 to keep the literal $1 required by pgbouncer's auth_query.
+            local patch='spec:
+              template:
+                spec:
+                  volumes:
+                    - name: pgbouncer-etc
+                      emptyDir:
+                        medium: Memory
+                    - name: pgbouncer-log
+                      emptyDir:
+                        medium: Memory
+                    - name: pgbouncer-run
+                      emptyDir:
+                        medium: Memory
+                  initContainers:
+                    - name: seed-pgbouncer-etc
+                      image: '"${init_image}"'
+                      command: ["/bin/sh", "-c"]
+                      args:
+                        - |
+                          set -e
+                          umask 0077
+
+                          cat > /seed/pgbouncer.ini <<INI
+                          # vim: set ft=dosini:
+                          [databases]
+                          * = host=${PGHOST} port=${PGPORT} auth_user=${PGUSER}
+                          postgres = host=${PGHOST} port=${PGPORT} auth_user=${PGUSER}
+
+                          [pgbouncer]
+                          pool_mode = ${CONNECTION_POOLER_MODE}
+                          listen_port = ${CONNECTION_POOLER_PORT}
+                          listen_addr = *
+                          auth_type = scram-sha-256
+                          auth_file = /etc/pgbouncer/auth_file.txt
+                          auth_dbname = postgres
+                          admin_users = ${PGUSER}
+                          # stats_users_prefix is a Zalando downstream-fork directive; the
+                          # CGR pgbouncer image is upstream and rejects it as unknown.
+                          auth_query = SELECT * FROM ${PGSCHEMA}.user_lookup(\$1)
+                          logfile = /var/log/pgbouncer/pgbouncer.log
+                          pidfile = /var/run/pgbouncer/pgbouncer.pid
+
+                          server_tls_sslmode = require
+                          server_tls_ca_file = /etc/pgbouncer/pgbouncer.crt
+                          server_tls_protocols = secure
+                          client_tls_sslmode = require
+                          client_tls_key_file = /etc/pgbouncer/pgbouncer.key
+                          client_tls_cert_file = /etc/pgbouncer/pgbouncer.crt
+
+                          log_connections = 0
+                          log_disconnections = 0
+
+                          default_pool_size = ${CONNECTION_POOLER_DEFAULT_SIZE}
+                          reserve_pool_size = ${CONNECTION_POOLER_RESERVE_SIZE}
+                          max_client_conn = ${CONNECTION_POOLER_MAX_CLIENT_CONN}
+                          max_db_connections = ${CONNECTION_POOLER_MAX_DB_CONN}
+                          idle_transaction_timeout = 600
+                          server_login_retry = 5
+                          ignore_startup_parameters = extra_float_digits,options
+                          INI
+
+                          cat > /seed/auth_file.txt <<AUTH
+                          "${PGUSER}" "${PGPASSWORD}"
+                          AUTH
+
+                          # Self-signed cert mirrors upstream Zalando entrypoint behaviour.
+                          openssl req -nodes -new -x509 -subj /CN=spilo.dummy.org \
+                            -keyout /seed/pgbouncer.key \
+                            -out /seed/pgbouncer.crt >/dev/null 2>&1
+
+                          chmod 0644 /seed/pgbouncer.ini /seed/pgbouncer.crt
+                          chmod 0600 /seed/auth_file.txt /seed/pgbouncer.key
+                      env:
+                        - name: PGHOST
+                          value: "'"${pghost}"'"
+                        - name: PGPORT
+                          value: "'"${pgport}"'"
+                        - name: PGSCHEMA
+                          value: "'"${pgschema}"'"
+                        - name: PGUSER
+                          valueFrom:
+                            secretKeyRef:
+                              name: '"${pguser_secret}"'
+                              key: username
+                        - name: PGPASSWORD
+                          valueFrom:
+                            secretKeyRef:
+                              name: '"${pgpass_secret}"'
+                              key: password
+                        - name: CONNECTION_POOLER_PORT
+                          value: "'"${cp_port}"'"
+                        - name: CONNECTION_POOLER_MODE
+                          value: "'"${cp_mode}"'"
+                        - name: CONNECTION_POOLER_DEFAULT_SIZE
+                          value: "'"${cp_default}"'"
+                        - name: CONNECTION_POOLER_MIN_SIZE
+                          value: "'"${cp_min}"'"
+                        - name: CONNECTION_POOLER_RESERVE_SIZE
+                          value: "'"${cp_reserve}"'"
+                        - name: CONNECTION_POOLER_MAX_CLIENT_CONN
+                          value: "'"${cp_maxclient}"'"
+                        - name: CONNECTION_POOLER_MAX_DB_CONN
+                          value: "'"${cp_maxdb}"'"
+                      volumeMounts:
+                        - name: pgbouncer-etc
+                          mountPath: /seed
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop: [ALL]
+                        runAsUser: 100
+                        runAsGroup: 101
+                        runAsNonRoot: true
+                  containers:
+                    - name: connection-pooler
+                      command: ["/usr/bin/pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]
+                      volumeMounts:
+                        - name: pgbouncer-etc
+                          mountPath: /etc/pgbouncer
+                        - name: pgbouncer-log
+                          mountPath: /var/log/pgbouncer
+                        - name: pgbouncer-run
+                          mountPath: /var/run/pgbouncer'
+
+            uds zarf tools kubectl patch deploy "${dep}" -n postgres \
+              --type=strategic --patch="${patch}"
+          }
+
+          if [ "$master" = "true" ]; then
+            patch_pooler pg-cluster-pooler
+          fi
+          if [ "$repl" = "true" ]; then
+            patch_pooler pg-cluster-pooler-repl
+          fi
+
+      - description: Wait for pooler Deployments to become Available
+        maxTotalSeconds: 180
+        cmd: |
+          set -e
+          for dep in pg-cluster-pooler pg-cluster-pooler-repl; do
+            if uds zarf tools kubectl get deploy "${dep}" -n postgres >/dev/null 2>&1; then
+              uds zarf tools kubectl rollout status deploy "${dep}" -n postgres --timeout=180s
+            fi
+          done
