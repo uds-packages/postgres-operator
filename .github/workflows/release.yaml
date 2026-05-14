@@ -17,8 +17,8 @@ permissions:
 jobs:
   publish:
     permissions:
-      contents: write # Allows reading the content of the repository.
-      packages: write # Allows reading the content of the repository's packages.
+      contents: write # Allows writing content to the repository.
+      packages: write # Allows writing content to the repository's packages.
       id-token: write
     strategy:
       matrix:
@@ -27,7 +27,7 @@ jobs:
         exclude:
           - flavor: registry1
             architecture: arm64
-    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@99fd276835257a9608656380d1d453356fe7539e # v1.24.8
+    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@86fcadc2845a318761276a8754e47e33c0d6ae31 # v1.24.10
     with:
       flavor: ${{ matrix.flavor }}
       options: --set BASE_REPO="ghcr.io/uds-packages"
