@@ -27,7 +27,7 @@ tasks:
     actions:
       - task: create:package
         with:
-          options: "--skip-sbom --flavor=unicorn"
+          options: "--skip-sbom"
 
   - name: create-deploy-test-bundle
     description: Test and validate cluster is deployed with Postgres Operator
