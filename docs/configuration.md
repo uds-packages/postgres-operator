@@ -34,6 +34,10 @@ Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom 
       value: <value>
 ```
 
+## Secrets Creation
+
+The operator creates credentials secrets in the namespace defined by the `{namespace}.{username}` prefix in `postgresql.users`. See the [Reference Package configuration](https://github.com/uds-packages/reference-package/blob/main/docs/configuration.md#secrets-creation) for an example of how to consume these secrets within an application chart.
+
 ## Postgres HugePages
 
 Postgres Operator can also support HugePages by setting the following keys appropriately for your environment.  You can learn more about HugePages in Kubernetes in their [Manage HugePages documentation](https://kubernetes.io/docs/tasks/manage-hugepages/scheduling-hugepages/#api) and learn more about these fields in the [`Postgresql` custom resource reference documentation](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#cluster-manifest-reference).
