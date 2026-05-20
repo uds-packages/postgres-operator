@@ -25,9 +25,12 @@ components:
       onDeploy:
         before:
           # this shims postgres operator versions v0.11.1-uds.1 and below to the new config chart namespace layout
-          - cmd: ./zarf tools kubectl annotate --overwrite postgresql -n postgres pg-cluster meta.helm.sh/release-namespace=postgres-operator || true
-          - cmd: ./zarf tools kubectl annotate --overwrite service -n postgres pg-cluster-headless meta.helm.sh/release-namespace=postgres-operator || true
-          - cmd: ./zarf tools kubectl annotate --overwrite package -n postgres postgres meta.helm.sh/release-namespace=postgres-operator || true
+          - cmd: |
+              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+                ./zarf tools kubectl annotate --overwrite postgresql -n postgres pg-cluster meta.helm.sh/release-namespace=postgres-operator || true
+                ./zarf tools kubectl annotate --overwrite service -n postgres pg-cluster-headless meta.helm.sh/release-namespace=postgres-operator || true
+                ./zarf tools kubectl annotate --overwrite package -n postgres postgres meta.helm.sh/release-namespace=postgres-operator || true
+              fi
         after:
           - description: Validate Postgres Operator Package
             maxTotalSeconds: 300
@@ -40,8 +43,10 @@ components:
           - description: Validate Postgres Package
             maxTotalSeconds: 300
             cmd: |
-              if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
-                 ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+                if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
+                  ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+                fi
               fi
           - description: Postgres Operator to be Healthy
             maxTotalSeconds: 90
@@ -54,6 +59,8 @@ components:
           - description: Wait for Postgres cluster to be Running if postgresql.enabled is true
             maxTotalSeconds: 300
             cmd: |
-              if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
-                 ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+                if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
+                  ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+                fi
               fi
