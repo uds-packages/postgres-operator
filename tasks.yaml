@@ -40,6 +40,11 @@ tasks:
           uds zarf tools yq ea -i 'select(.kind != "Namespace")' dist/pepr-module-pgbouncer.yaml
           mkdir -p ../../manifests
           cp dist/pepr-module-pgbouncer.yaml ../../manifests/pepr-module-pgbouncer.yaml
+          # add license header to the generated manifest
+          # 1 - get license header from ./zarf.yaml (first 2 lines)
+          _license_header=$(head -n 2 ../../zarf.yaml)
+          # 2 - prepend license header to the generated manifest
+          echo "$_license_header" | cat - ../../manifests/pepr-module-pgbouncer.yaml > temp && mv temp ../../manifests/pepr-module-pgbouncer.yaml
 
   - name: create-deploy-test-bundle
     description: Test and validate cluster is deployed with Postgres Operator
