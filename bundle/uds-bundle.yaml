@@ -51,3 +51,8 @@ packages:
                   remoteSelector:
                     cluster-name: pg-cluster
                   description: "Egress to a non-default pg cluster"
+          values:
+            - path: enableConnectionPooler
+              value: true
+            - path: enableReplicaConnectionPooler
+              value: true

@@ -51,9 +51,6 @@ spec:
           cluster-name: pg-cluster
         remoteGenerated: KubeAPI
 
-      {{- /* Pooler (pgbouncer) traffic. Zalando labels pooler pods with
-             `application=db-connection-pooler`. IntraNamespace rules above
-             already cover pooler <-> spilo traffic within this namespace. */}}
       {{- if or (.Values.postgresql.enableConnectionPooler | default false) (.Values.postgresql.enableReplicaConnectionPooler | default false) }}
       {{- if kindIs "slice" .Values.postgresql.ingress -}}
       {{- range .Values.postgresql.ingress }}

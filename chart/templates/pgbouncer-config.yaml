@@ -1,9 +1,7 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-{{- /* poolerConfig has no defaults in values.yaml; gate is nil-safe and each value
-       falls back to a sensible default below, overridable via postgresql.poolerConfig.* */}}
-{{- if and .Values.postgresql.enabled (dig "poolerConfig" "enabled" false .Values.postgresql) }}
+{{- if and .Values.postgresql.enabled (or .Values.postgresql.enableConnectionPooler .Values.postgresql.enableReplicaConnectionPooler) }}
 {{- $p := .Values.postgresql.poolerConfig | default dict }}
 apiVersion: v1
 kind: ConfigMap
