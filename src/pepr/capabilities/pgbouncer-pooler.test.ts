@@ -1,3 +1,6 @@
+// Copyright 2024 Defense Unicorns
+// SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
 import { describe, it, expect } from "vitest";
 import { a } from "pepr";
 import { renderUserlist, applyPoolerPatch, needsBootstrap } from "./pgbouncer-pooler";

@@ -6,7 +6,6 @@ yaml-files:
 ignore:
   - '**/chart/templates**'
 
-
 rules:
   anchors: enable
   braces: enable
