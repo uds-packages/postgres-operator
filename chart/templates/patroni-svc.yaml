@@ -1,0 +1,19 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+{{- if not .Values.ambient }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-cluster-patroni
+  namespace: postgres
+spec:
+  clusterIP: None
+  selector:
+    application: spilo
+    cluster-name: pg-cluster
+  ports:
+    - name: patroni
+      port: 8008
+      targetPort: 8008
+{{- end }}

@@ -1,0 +1,56 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+{{- if and .Values.postgresql.enabled .Values.postgresql.extensions }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: enable-extensions-{{ now | unixEpoch }}
+  namespace: postgres
+spec:
+  ttlSecondsAfterFinished: 5
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: extension-setup
+          image: {{ .Values.job.image | quote }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              # Wait for each database to be ready
+              for db in {{- range $db, $_ := .Values.postgresql.extensions }} {{ $db }} {{- end }}; do
+                echo "Waiting for database $db to become available..."
+                until PGPASSWORD=$PGPASSWORD psql \
+                  -h pg-cluster.postgres.svc.cluster.local \
+                  -U "$PGUSERNAME" \
+                  -d "$db" \
+                  -c '\q' 2>/dev/null; do
+                  sleep 3
+                done
+              done
+
+              # Install extensions per database
+              {{- range $db, $exts := .Values.postgresql.extensions }}
+              echo "Installing extensions in database: {{ $db }}"
+              for ext in {{- range $exts }} {{ . }} {{- end }}; do
+                echo "Creating extension: $ext"
+                PGPASSWORD=$PGPASSWORD psql \
+                  -h pg-cluster.postgres.svc.cluster.local \
+                  -U "$PGUSERNAME" \
+                  -d "{{ $db }}" \
+                  -c "CREATE EXTENSION IF NOT EXISTS $ext;"
+              done
+              {{- end }}
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: PGUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres.pg-cluster.credentials.postgresql.acid.zalan.do
+                  key: username
+{{- end }}

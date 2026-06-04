@@ -3,11 +3,11 @@
 
 image:
   registry: cgr.dev
-  repository: du-uds-defenseunicorns/postgres-operator-fips
-  tag: "1.13.0"
+  repository: defenseunicorns.com/postgres-operator-fips
+  tag: "v1.15.1"
 configConnectionPooler:
-  connection_pooler_image: "cgr.dev/du-uds-defenseunicorns/pgbouncer-fips:1.22.1"
+  connection_pooler_image: "cgr.dev/defenseunicorns.com/pgbouncer-fips:v1.25.2"
 configLogicalBackup:
-  logical_backup_docker_image: "ghcr.io/zalando/postgres-operator/logical-backup:v1.13.0"
+  logical_backup_docker_image: "quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.15-jammy-scratch-fips-rfcurated"
 configGeneral:
-  docker_image: "ghcr.io/zalando/spilo-15:3.2-p1"
+  docker_image: "cgr.dev/defenseunicorns.com/spilo-17:v4.1.2"

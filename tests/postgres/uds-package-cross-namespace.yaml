@@ -1,0 +1,19 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+apiVersion: uds.dev/v1alpha1
+kind: Package
+metadata:
+  name: gitlab
+  namespace: gitlab
+spec:
+  network:
+    serviceMesh:
+      mode: ambient
+    allow:
+      - direction: Egress
+        selector:
+          job-name: db-seed-job
+        remoteNamespace: postgres
+        remoteSelector:
+          cluster-name: pg-cluster

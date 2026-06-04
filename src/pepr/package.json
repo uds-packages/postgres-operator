@@ -1,0 +1,57 @@
+{
+  "name": "pepr-pgbouncer",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Configures the distroless pgbouncer connection pooler for the Zalando postgres-operator",
+  "keywords": [
+    "pepr",
+    "k8s",
+    "policy-engine",
+    "pepr-module",
+    "security"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pepr": {
+    "uuid": "pgbouncer",
+    "onError": "ignore",
+    "webhookTimeout": 10,
+    "customLabels": {
+      "namespace": {
+        "pepr.dev": ""
+      }
+    },
+    "alwaysIgnore": {
+      "namespaces": []
+    },
+    "admission": {
+      "alwaysIgnore": {
+        "namespaces": []
+      }
+    },
+    "watch": {
+      "alwaysIgnore": {
+        "namespaces": []
+      }
+    },
+    "includedFiles": [],
+    "env": {}
+  },
+  "scripts": {
+    "k3d-setup": "k3d cluster delete pepr-dev && k3d cluster create pepr-dev --k3s-arg '--debug@server:0' --wait && kubectl rollout status deployment -n kube-system",
+    "test": "vitest run",
+    "build": "pepr build"
+  },
+  "dependencies": {
+    "pepr": "1.2.1",
+    "undici": "^7.0.1"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3",
+    "vitest": "^3.2.6"
+  },
+  "overrides": {
+    "brace-expansion": "1.1.11"
+  }
+}

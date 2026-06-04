@@ -16,7 +16,7 @@ components:
         version: 0.1.0
         localPath: ../chart
       - name: postgres-operator
-        version: 1.13.0
+        version: 1.15.1
         namespace: postgres-operator
         url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
         valuesFiles:
@@ -34,9 +34,15 @@ components:
             wait:
               cluster:
                 kind: packages.uds.dev
-                name: postgres
-                namespace: postgres
+                name: postgres-operator
+                namespace: postgres-operator
                 condition: "'{.status.phase}'=Ready"
+          - description: Validate Postgres Package
+            maxTotalSeconds: 300
+            cmd: |
+              if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
+                 ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+              fi
           - description: Postgres Operator to be Healthy
             maxTotalSeconds: 90
             wait:
@@ -45,3 +51,9 @@ components:
                 name: app.kubernetes.io/name=postgres-operator
                 namespace: postgres-operator
                 condition: Ready
+          - description: Wait for Postgres cluster to be Running if postgresql.enabled is true
+            maxTotalSeconds: 300
+            cmd: |
+              if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
+                 ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+              fi

@@ -1,31 +1,64 @@
 {
-    "enabled": true,
-    "forkProcessing": "enabled",
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-      "github>defenseunicorns/uds-common//config/renovate.json5",
-      ":semanticCommits",
-      ":semanticCommitTypeAll(chore)"
-    ],
-    "packageRules": [
-      {
-        "groupName": "Postgres Support Dependencies",
-        "labels": ["support-deps"],
-        "commitMessageTopic": "support-deps",
-        "packagePatterns": ["*"]
-      },
-      {
-        "groupName": "Postgres Package Dependencies",
-        "labels": ["package-deps"],
-        "commitMessageTopic": "package-deps",
-        "matchDatasources": ["docker", "helm", "git-tags"]
-      },
-      {
-        "groupName": "Postgres Package Dependencies",
-        "labels": ["package-deps"],
-        "commitMessageTopic": "package-deps",
-        "matchPackageNames": ["zalando/postgres-operator", "registry.opensource.zalan.do/acid/logical-backup", "registry.opensource.zalan.do/acid/postgres-operator"],
-        "allowedVersions": "/v.+/"
-      }
-    ]
-  }
+  "enabled": true,
+  "forkProcessing": "enabled",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>defenseunicorns/uds-common//config/renovate.json5",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^quay\\.io/rfcurated/"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?-.*fips.*rfcurated$"
+    },
+    {
+      "matchPackageNames": ["quay.io/rfcurated/prometheuscommunity/postgres-exporter"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?-jammy-scratch-bnt-fips-rfcurated$"
+    },
+    {
+      "matchPackageNames": ["quay.io/rfcurated/zalando/spilo-17"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)-jammy-fips-rfcurated$"
+    },
+    {
+      "matchPackageNames": ["ghcr.io/zalando/spilo-17"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-p(?<patch>\\d+)$"
+    },
+    {
+      "groupName": "Postgres Support Dependencies",
+      "labels": [
+        "support-deps"
+      ],
+      "commitMessageTopic": "support-deps",
+      "matchPackageNames": [
+        "*"
+      ]
+    },
+    {
+      "groupName": "Postgres Package Dependencies",
+      "labels": [
+        "package-deps"
+      ],
+      "commitMessageTopic": "package-deps",
+      "matchDatasources": [
+        "docker",
+        "helm",
+        "git-tags"
+      ]
+    },
+    {
+      "groupName": "Postgres Package Dependencies",
+      "labels": [
+        "package-deps"
+      ],
+      "commitMessageTopic": "package-deps",
+      "matchPackageNames": [
+        "zalando/postgres-operator",
+        "registry.opensource.zalan.do/acid/logical-backup",
+        "registry.opensource.zalan.do/acid/postgres-operator"
+      ],
+      "allowedVersions": "/v.+/"
+    }
+  ]
+}

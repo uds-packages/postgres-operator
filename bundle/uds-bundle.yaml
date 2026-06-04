@@ -5,21 +5,12 @@ kind: UDSBundle
 metadata:
   name: postgres-operator-test
   description: A UDS bundle for deploying Zalando Postgres Operator and on a development cluster
-  # x-release-please-start-version
-  version: 1.13.0-uds.2
-  # x-release-please-end
+  version: dev
 
 packages:
-  # this sets up the namespaces that we will need in order to configure the default databases (and corresponding secrets) that are setup below
-  - name: dev-namespaces
-    path: ../
-    ref: 0.1.0
-
   - name: postgres-operator
     path: ../
-    # x-release-please-start-version
-    ref: 1.13.0-uds.2
-    # x-release-please-end
+    ref: dev
     overrides:
       postgres-operator:
         uds-postgres-config:
@@ -41,12 +32,17 @@ packages:
                   gitlabdb: gitlab.gitlab
                   mattermostdb: mattermost.mattermost
                   sonarqubedb: sonarqube.sonarqube
+                extensions:
+                  gitlabdb: ["hstore"]
                 version: "14"
+                parameters:
+                  - name: log_rotation_age
+                    value: 2d
                 ingress:
                   - remoteNamespace: gitlab
             - name: ACID_PG_CLUSTER_NETWORKING
               description: "Allow connectivity to the acid pg cluster for testing (see tests/ folder)"
-              path: custom
+              path: additionalNetworkAllow
               default:
                 - direction: Egress
                   selector:

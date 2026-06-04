@@ -1,9 +1,11 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
+ambient: true
+
 postgresql:
   enabled: false
-  password_encryption: scram-sha-256
+  parameters: []
   ingress: []
   resources:
     limits:
@@ -15,6 +17,16 @@ postgresql:
   additionalVolumes: []
   env: []
 
+  # Connection pooler options
+  # Ref: https://opensource.zalando.com/postgres-operator/docs/user.html#connection-pooler
+  enableConnectionPooler: true
+  enableReplicaConnectionPooler: false
+  connectionPooler: {}
+
+# Example values for postgresql
+#
+# postgresql:
+#   enabled: true
 #   teamId: "uds"
 #   volume:
 #     size: "1Gi"
@@ -25,6 +37,8 @@ postgresql:
 #   databases:
 #     mydb: mynamespace.myuser
 #     yourdb: yournamespace.youruser
+#   extensions:
+#     mydb: ["postgis","hstore"] # database extensions
 #   version: "14"
 #   ingress:
 #     - remoteGenerated: Anywhere
@@ -34,7 +48,11 @@ postgresql:
 #       remoteSelector:
 #         app.kubernetes.io/name: tempo
 
-custom: []
+job:
+  # Job image to use for running extension loading jobs (e.g. ghcr.io/zalando/spilo-17:4.0-p2 - needs the psql client)
+  image: ""
+
+additionalNetworkAllow: []
   # - direction: Egress
   #   selector:
   #     app.kubernetes.io/name: postgres-operator

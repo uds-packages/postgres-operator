@@ -2,18 +2,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 includes:
-  - dependencies: ./tasks/dependencies.yaml
   - test: ./tasks/test.yaml
-  - create: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/create.yaml
-  - publish: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/publish.yaml
-  - lint: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/lint.yaml
-  - pull: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/pull.yaml
-  - deploy: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/deploy.yaml
-  - setup: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/setup.yaml
-  - actions: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/actions.yaml
-  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/badge.yaml
-  - upgrade: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/upgrade.yaml
-  - compliance: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.1.2/tasks/compliance.yaml
+  - create: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/create.yaml
+  - publish: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/publish.yaml
+  - lint: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/lint.yaml
+  - pull: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/pull.yaml
+  - deploy: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/deploy.yaml
+  - setup: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/setup.yaml
+  - actions: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/actions.yaml
+  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/badge.yaml
+  - upgrade: https://raw.githubusercontent.com/defenseunicorns/uds-common/v1.24.8/tasks/upgrade.yaml
 
 tasks:
   - name: default
@@ -30,13 +28,30 @@ tasks:
         with:
           options: "--skip-sbom"
 
+  - name: build-pepr
+    description: |
+      Build the pgbouncer Pepr module manifest into src/pepr/dist (gitignored).
+      For local iteration only — `zarf package create --flavor unicorn` runs this
+      automatically via the unicorn component's onCreate action. Requires Node.js 20+ and yq.
+    actions:
+      - description: "Build the pgbouncer Pepr module"
+        dir: src/pepr
+        cmd: |
+          npm ci --no-audit --no-fund
+          npx pepr build --custom-image ghcr.io/defenseunicorns/pepr/private/controller:v1.2.1
+          # Strip the shared pepr-system Namespace (owned by uds-core) so package removal
+          # never cascade-deletes it. See zarf.yaml onCreate for the rationale.
+          yq ea -i 'select(.kind != "Namespace")' dist/pepr-module-pgbouncer.yaml
+          # Copy the built manifest to the repo-root manifests/ dir so it can be committed
+          # (cmd runs in src/pepr, so the root is two levels up).
+          mkdir -p ../../manifests
+          cp dist/pepr-module-pgbouncer.yaml ../../manifests/pepr-module-pgbouncer.yaml
+
   - name: create-deploy-test-bundle
     description: Test and validate cluster is deployed with Postgres Operator
     actions:
-      - task: dependencies:create
       - task: create:test-bundle
       - task: deploy:test-bundle
-      - task: setup:create-doug-user
       - task: test:all
 
   - name: dev
@@ -54,22 +69,15 @@ tasks:
       - task: create-dev-package
       - task: setup:k3d-test-cluster
       - task: create-deploy-test-bundle
-      - task: compliance:validate
 
   - name: test-upgrade
     description: Test an upgrade from the latest released package to the current branch
     actions:
       - task: upgrade:create-latest-tag-bundle
-        with:
-          dep_commands: ./uds run dependencies:create
       - task: setup:k3d-test-cluster
       - task: deploy:test-bundle
-      - task: setup:create-doug-user
-      - task: compliance:validate
       - task: create-dev-package
       - task: create-deploy-test-bundle
-      - task: compliance:validate
-      - task: compliance:evaluate
 
   - name: publish-release
     description: Build and publish the packages
@@ -80,7 +88,3 @@ tasks:
       - task: create-deploy-test-bundle
       - description: Publish the package
         task: publish:package
-        with:
-          # x-release-please-start-version
-          version: "1.13.0-uds.2"
-          # x-release-please-end

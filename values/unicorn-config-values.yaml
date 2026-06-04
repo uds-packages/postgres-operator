@@ -2,4 +2,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 metrics:
-  image: "cgr.dev/du-uds-defenseunicorns/prometheus-postgres-exporter-fips:0.15.0"
+  image: "cgr.dev/defenseunicorns.com/prometheus-postgres-exporter-fips:v0.19.1"
+
+job:
+  image: "cgr.dev/defenseunicorns.com/spilo-17:v4.1.2"
+
+# chainguard pgbouncer has no entrypoint to build pgbouncer.ini; render the
+# static config ConfigMap (mounted by the pepr module) on this flavor only.
+postgresql:
+  poolerConfig:
+    enabled: true

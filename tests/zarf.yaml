@@ -14,9 +14,10 @@ components:
     manifests:
       - name: db-seed
         files:
+          - postgres/uds-package-cross-namespace.yaml
           - postgres/db-seed-cross-namespace.yaml
     images:
-      - docker.io/postgres:13
+      - docker.io/postgres:18
     actions:
       onDeploy:
         before:
@@ -35,6 +36,23 @@ components:
                 namespace: gitlab
                 condition: "'{.status.succeeded}'=1"
 
+  - name: test-bad-password
+    required: true
+    manifests:
+      - name: bad-password-test
+        files:
+          - postgres/bad-password-test.yaml
+    images:
+      - docker.io/postgres:18
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: bad-password-test
+                namespace: gitlab
+                condition: "'{.status.succeeded}'=1"
 
   - name: deploy-postgres-standalone
     required: true
@@ -53,6 +71,7 @@ components:
                 namespace: acid
                 condition: "'{.status.PostgresClusterStatus}'=Running"
             maxTotalSeconds: 600
+
   - name: test-standalone-postgres-deployment
     required: true
     manifests:
@@ -60,7 +79,7 @@ components:
         files:
           - postgres/db-seed.yaml
     images:
-      - docker.io/postgres:13
+      - docker.io/postgres:18
     actions:
       onDeploy:
         after:

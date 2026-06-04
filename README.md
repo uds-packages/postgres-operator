@@ -1,11 +1,13 @@
 # 🏭 UDS Postgres Operator Package
 
 [<img alt="Made for UDS" src="https://raw.githubusercontent.com/defenseunicorns/uds-common/refs/heads/main/docs/assets/made-for-uds-silver.svg" height="20px"/>](https://github.com/defenseunicorns/uds-core)
-[![Latest Release](https://img.shields.io/github/v/release/defenseunicorns/uds-package-postgres-operator)](https://github.com/defenseunicorns/uds-package-postgres-operator/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/defenseunicorns/uds-package-postgres-operator/release.yaml)](https://github.com/defenseunicorns/uds-package-postgres-operator/actions/workflows/release.yaml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/uds-package-postgres-operator/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/uds-package-postgres-operator)
+[![Latest Release](https://img.shields.io/github/v/release/uds-packages/postgres-operator)](https://github.com/uds-packages/postgres-operator/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/uds-packages/postgres-operator/release.yaml)](https://github.com/uds-packages/postgres-operator/actions/workflows/release.yaml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator/badge)](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator)
 
-This package is designed for use as part of a [UDS Software Factory](https://github.com/defenseunicorns/uds-software-factory) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
+This package is designed for use as part of a [UDS Bundle](https://docs.defenseunicorns.com/core/concepts/configuration--packaging/bundles/) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
+
+> The Postgres Operator is a software tool that automates the deployment and management of PostgreSQL databases on Kubernetes, simplifying the process of setting up and maintaining highly available and scalable PostgreSQL clusters.
 
 ## Prerequisites
 
@@ -13,7 +15,7 @@ This package requires a Kubernetes Cluster providing a Storage Class that has [U
 
 ## Releases
 
-The released packages can be found in [ghcr](https://github.com/defenseunicorns/uds-package-postgres-operator/pkgs/container/packages%2Fuds%2Fpostgres-operator).
+The released packages can be found in [ghcr](https://github.com/uds-packages/postgres-operator/pkgs/container/postgres-operator)).
 
 ## UDS Tasks (for local dev and CI)
 

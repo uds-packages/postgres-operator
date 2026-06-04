@@ -6,5 +6,5 @@ build/
 zarf-sbom
 tmp/
 .vscode/
-
-
+oscal-assessment-results.yaml
+upgrade-test

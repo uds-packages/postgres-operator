@@ -14,15 +14,56 @@ spec:
   volume:
     size: {{ .Values.postgresql.volume.size | quote }}
   numberOfInstances: {{ .Values.postgresql.numberOfInstances }}
+  {{- if hasKey .Values.postgresql "enableConnectionPooler" }}
+  enableConnectionPooler: {{ .Values.postgresql.enableConnectionPooler }}
+  {{- end }}
+  {{- if hasKey .Values.postgresql "enableReplicaConnectionPooler" }}
+  enableReplicaConnectionPooler: {{ .Values.postgresql.enableReplicaConnectionPooler }}
+  {{- end }}
+  {{- with .Values.postgresql.connectionPooler }}
+  connectionPooler:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   users:
     {{- toYaml .Values.postgresql.users | nindent 4 }} # database owner
   databases:
     {{- toYaml .Values.postgresql.databases | nindent 4 }}
   patroni:
-    {{- toYaml .Values.postgresql.patroni | nindent 4 }}
+    initdb:
+      auth-host: scram-sha-256
+      auth-local: trust
+    pg_hba:
+    {{- $defaultPgHba := list 
+        "local   all             all                                     trust"
+        "hostssl all             +zalandos            127.0.0.1/32       pam"
+        "host    all             all                  127.0.0.1/32       scram-sha-256"
+        "hostssl all             +zalandos            ::1/128            pam"
+        "host    all             all                  ::1/128            scram-sha-256"
+        "local   replication     standby                                 trust"
+        "hostssl replication     standby all                             scram-sha-256"
+        "host    all             all                  10.0.0.0/8         scram-sha-256"
+        "host    all             all                  172.16.0.0/12      scram-sha-256"
+        "host    all             all                  192.168.0.0/16     scram-sha-256"
+        "hostnossl all           all                  all                reject"
+        "hostssl all             +zalandos            all                pam"
+        "hostssl all             all                  all                scram-sha-256"
+    }}
+    {{- if and (hasKey .Values.postgresql "patroni") (hasKey .Values.postgresql.patroni "pg_hba") }}
+      {{- toYaml .Values.postgresql.patroni.pg_hba | nindent 6 }}
+    {{- else }}
+      {{- toYaml $defaultPgHba | nindent 6 }}
+    {{- end }}
+    {{- with (omit (.Values.postgresql.patroni | default dict) "pg_hba") }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   postgresql:
     parameters:
-      password_encryption: {{ .Values.postgresql.password_encryption | quote }}
+      password_encryption: scram-sha-256
+    {{- range .Values.postgresql.parameters | default list }}
+      {{- if ne .name "password_encryption" }}
+      {{ .name }}: {{ .value | quote }}
+      {{- end }}
+    {{- end }}
     version: {{ .Values.postgresql.version | quote }}
   resources:
     {{- toYaml .Values.postgresql.resources | nindent 4 }}
@@ -31,6 +72,10 @@ spec:
     {{- range .Values.postgresql.additionalVolumes }}
     - {{ . | toYaml | nindent 6 }}
     {{- end }}
+  {{- end }}
+  {{- if .Values.postgresql.tls }}
+  tls:
+    {{- toYaml .Values.postgresql.tls | nindent 4 }}
   {{- end }}
   sidecars:
     - name: "exporter"

@@ -1,0 +1,360 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pepr-pgbouncer
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pepr-pgbouncer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pepr-pgbouncer
+subjects:
+  - kind: ServiceAccount
+    name: pepr-pgbouncer
+    namespace: pepr-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pepr-pgbouncer
+  namespace: pepr-system
+---
+apiVersion: v1
+data:
+  value: >-
+    YjBhYzhiNGZkZGM2ODg5ZjU2MWEyZjkwM2IzNWQwNTZhODNhNjdlOWY3OTRmNjMwMzdiMjRhNzU1MTNmNWMyMA==
+kind: Secret
+metadata:
+  name: pepr-pgbouncer-api-path
+  namespace: pepr-system
+type: Opaque
+---
+apiVersion: v1
+data:
+  tls.crt: >-
+    LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlDcURDQ0FaQ2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBQU1CNFhEVEkyTURZd05EQXdOREUxDQpNbG9YRFRJM01EWXdOREF3TkRFMU1sb3dBRENDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFEZ2dFUEFEQ0NBUW9DDQpnZ0VCQUtzRmhucjRma1FMWWp5Wk9TZzVRWlNKRGgweTUrcytobVY5YUxBd3V3SXdEOG05MmxTZC9DZktWendLDQo4a3ArV2U4Y1Bsd2Fmd0VGZnMxdTRhdHBYSnE3Z3YrSnNTZ3VsTkNLaERxVEtrZFdwdGdiblNESHpFQktDR1BLDQpIVXZqd1QzMDFSZC8wY2ZBZksxQmlnSlNQWTA3bXM0T0d5VERVNWlwaDhuMzExSGM5NG5wWnpzdXQ3VWsyUnQ2DQpBeW9OQzVDMXkwTitBSE9QWmMxNHVYQWs2Q1hYUkt1cFlHSUlWSnFnRHUxenljSWdDbG1YWnQzcldsZWlBelRtDQorQ25wOHdqVzdJVjhyZnIrTU1EMjY3QWlSTkZKelBRbURvNFNwN3FHb1NWQ1NwUmZPOURzK09zL1QxVG9WcUxvDQp3WmlBaFRLZ0s4Mmc2OVcwZVU1YWcyZUhNbk1DQXdFQUFhTXRNQ3N3S1FZRFZSMFJCQ0l3SUlJZWNHVndjaTF3DQpaMkp2ZFc1alpYSXVjR1Z3Y2kxemVYTjBaVzB1YzNaak1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQS9GcmNrDQpYY29TWHJhaW4vZGNJZiswdmtzeXMybFdNOVdsd3pBY1IyYWw2eDdaeGlBbFRsK01jK1JwcFFYMzh2ODFwWUFUDQpxaGRSN251VVdabnQvaTI5K2JuM2FyWHgrY3ZsbnoyS1VmMTROOGwzakpxS1Y3UGFPa1ZnNEhJTDdBbkdjV2V5DQpTT3h3TlNvbEVFeHJzb1NuclZUTWdBdlNYRk8xVE9zZUI1MUY0WWpLVmsxWnlxRm9NdjczTnRHR2EvK1FiNk1TDQpGMXJwd0hQWFV0dXlHSFhmYlBLWDFpUzBNbER5MTFYWFRoWXZPa3BzOWptdHNNbzZsMmlyV0t4NHVDd0lGOEZxDQpPTVYvdnlRZDNhVVpTOUJYb0xCWjBsZ2VQTEx6RVRmalJ0cmp2ejhTN1B5VzZtN0ZqNVhaM05nY20rdTJiTXgyDQpRY0RyZGpYT0Ztb2ZPTm1PDQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQo=
+  tls.key: >-
+    LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQ0KTUlJRXBBSUJBQUtDQVFFQXF3V0dldmgrUkF0aVBKazVLRGxCbElrT0hUTG42ejZHWlgxb3NEQzdBakFQeWIzYQ0KVkozOEo4cFhQQXJ5U241Wjd4dytYQnAvQVFWK3pXN2hxMmxjbXJ1Qy80bXhLQzZVMElxRU9wTXFSMWFtMkJ1ZA0KSU1mTVFFb0lZOG9kUytQQlBmVFZGMy9SeDhCOHJVR0tBbEk5alR1YXpnNGJKTU5UbUttSHlmZlhVZHozaWVsbg0KT3k2M3RTVFpHM29ES2cwTGtMWExRMzRBYzQ5bHpYaTVjQ1RvSmRkRXE2bGdZZ2hVbXFBTzdYUEp3aUFLV1pkbQ0KM2V0YVY2SUROT2I0S2VuekNOYnNoWHl0K3Y0d3dQYnJzQ0pFMFVuTTlDWU9qaEtudW9haEpVSktsRjg3ME96NA0KNno5UFZPaFdvdWpCbUlDRk1xQXJ6YURyMWJSNVRscURaNGN5Y3dJREFRQUJBb0lCQUFVN0Y0aG1WbEpWZU0wNg0Kc0lWYTd2Y1FsQlp2aXFsbTBheUQvL0kzbzFpblNLeFdlcm1RMVhnUUY4ZjEyOEJNaWdxbXRmK1NMZVZGbWtIRg0KVFBDMXVjZmZ5VnR3aGpNZzdadE5TVXNUV2oweFdNd09XQ2w3QXZQS2IrUkJkOURzNStteHRkelFvNFYxRFRzdA0KWUgrK3JUUkhLTzU1ZnZvS1lXR3ZlY0JETE5wTGw1Ukw0NVpxUUE1cHRvVWF4eE9uNEdrQTJBZWtUeGxOaDNKUw0KYXNoLy9QRk5XMVRSSW1HZHZER3hTWVhzcFhkSWEyTm9UV2Q5WTV4Q1BDR2xQNWNONnBkUjU4YzZ2blBodjhHUQ0KY2ZpaGdZclhKZXNGUExKTlJRNDY1S1BDYkFZQXlCOFAxd0pMMXdhOGRrY0RaOUpxcFJMUXMrdnYxVldRZWRVSg0KeUxWWThVa0NnWUVBMjFBZjlJem0va1pJYlJPRDFOQlhNYUQvZ3o3QmI3UWhiVDBRSSs4UHZHVFZHTytSd3kxZw0Kb2lEQ2ExWFdob3l2SG1rdlJJL0dMK0E3cmlSamJjYmVtdWY2RjgrRzdsbHBQdTZ2OCt4R0o1SElMWDJxbVdxdg0KSjJOTlFwMDY1eW9zdWtqb1hZN0UxUDhLblJndUhnKzRlWDRhUlpwUHMybmY3cWhva1JCVnk2a0NnWUVBeDZGZA0KckY0NW5hSjhoTFB6Mit1Z3hUTEs1eFlnUnp3ZjZCdXlVeHF2dGVibW9iZ1MzUWV2Y3JGYis2L2JxZ2JHMmJMQw0KMVlNOGRlejZudVhQTGlQRENsSTVXSjduclVuUlJXN2tIUngrekV4QTF1NjBNcmtDSTM1ZjVDbkU0TFhrVkhmKw0KdVJuVTY4eGlpMUFtUWZ3TDNNYWZlYkRUaER0UzNOUmFrMTZVdnJzQ2dZRUEwUVhXenYrVUVQanZnblk5Q1pIZg0KNkw4bmgvRkI3N0xnd1BxWDdZZWxtY3NJaHhHZC9VVzhlZ2w3QTAzMmZwcUxOUkxQS0N0WG1yMitZOFR1dHV2NQ0Kc2U0eW9JcjhjU0xxZWo2SG1KV3liM2cwTDVjOEI2aDBjN2ZqSlFBeDZheDZvTGxvTGZNcWlrN2gwTVFCQUVtLw0KYXB2VGNrOFdjMHNQVUtsVnNCeS9pTEVDZ1lCMlFTcWlQcmJXb0RndXpBSzYxZHZJdFF2bzAveU85aGpZZi8raw0KcHZ4TFB0cUVGZXhtcm5USjlqSk01Nkd5R0kyV3pBUUtRdEYvOGIrTWZRbTdoVWUyUjNyYytsUzNIREV4ZGp6Kw0KMmJCckNRaW55WU5KUUxyNWw1VHFMYXdJaVBjVzZuWWo1Qjl6QndHaEVQdDR2dnV2N3FEdGowZmMzdDk1SFBvQw0KcmxaaW5RS0JnUUM5WEtOdk1qVkZTUVREVGdtOHJkWVZyMC93U0MwNnhGTFNscmFCdENQcnlRMUdIVmkxd2RmNg0KMWpZRUFIMXlPTFZGMEIreDNsNlFwZWpvWVY4Wnlldzk3c0w4eituVjB3dTV3UUl6NWFIMDBTeW1wbkx5c28xWg0Kb0VuOC92eWx2VGNmZUwrMzdOZFBvcktXRDhENURWUW9RcHdPTjdtUDV6cEY0MW42OGh6cmJBPT0NCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tDQo=
+kind: Secret
+metadata:
+  name: pepr-pgbouncer-tls
+  namespace: pepr-system
+type: kubernetes.io/tls
+---
+apiVersion: v1
+data:
+  module-e0519630f08b84a64d74fb755b0034c2d22ba9cbbfe54c303fe5b2bd4c21bbef.js.gz: >-
+    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
+kind: Secret
+metadata:
+  name: pepr-pgbouncer-module
+  namespace: pepr-system
+type: Opaque
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pepr-pgbouncer-store
+  namespace: pepr-system
+rules:
+  - apiGroups:
+      - pepr.dev
+    resourceNames:
+      - ''
+    resources:
+      - peprstores
+    verbs:
+      - create
+      - get
+      - patch
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pepr-pgbouncer-store
+  namespace: pepr-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pepr-pgbouncer-store
+subjects:
+  - kind: ServiceAccount
+    name: pepr-pgbouncer-store
+    namespace: pepr-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    pepr.dev/description: >-
+      Configures the distroless pgbouncer connection pooler for the Zalando postgres-operator
+  labels:
+    app: pepr-pgbouncer-watcher
+    pepr.dev/controller: watcher
+    pepr.dev/uuid: pgbouncer
+  name: pepr-pgbouncer-watcher
+  namespace: pepr-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pepr-pgbouncer-watcher
+      pepr.dev/controller: watcher
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        buildTimestamp: '1780533712429'
+      labels:
+        app: pepr-pgbouncer-watcher
+        pepr.dev/controller: watcher
+    spec:
+      containers:
+        - args:
+            - /app/node_modules/pepr/dist/controller.js
+            - e0519630f08b84a64d74fb755b0034c2d22ba9cbbfe54c303fe5b2bd4c21bbef
+          env:
+            - name: PEPR_WATCH_MODE
+              value: 'true'
+            - name: PEPR_PRETTY_LOG
+              value: 'false'
+            - name: LOG_LEVEL
+              value: info
+          image: ghcr.io/defenseunicorns/pepr/private/controller:v1.2.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTPS
+            initialDelaySeconds: 10
+          name: watcher
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTPS
+            initialDelaySeconds: 10
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 500m
+            requests:
+              memory: 256Mi
+              cpu: 200m
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/certs
+              name: tls-certs
+              readOnly: true
+            - mountPath: /app/load
+              name: module
+              readOnly: true
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: pepr-pgbouncer
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: pepr-pgbouncer-tls
+        - name: module
+          secret:
+            secretName: pepr-pgbouncer-module
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    pepr.dev/description: >-
+      Configures the distroless pgbouncer connection pooler for the Zalando postgres-operator
+  labels:
+    app: pepr-pgbouncer
+    pepr.dev/controller: admission
+    pepr.dev/uuid: pgbouncer
+  name: pepr-pgbouncer
+  namespace: pepr-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pepr-pgbouncer
+      pepr.dev/controller: admission
+  template:
+    metadata:
+      annotations:
+        buildTimestamp: '1780533712429'
+      labels:
+        app: pepr-pgbouncer
+        pepr.dev/controller: admission
+    spec:
+      containers:
+        - args:
+            - /app/node_modules/pepr/dist/controller.js
+            - e0519630f08b84a64d74fb755b0034c2d22ba9cbbfe54c303fe5b2bd4c21bbef
+          env:
+            - name: PEPR_WATCH_MODE
+              value: 'false'
+            - name: PEPR_PRETTY_LOG
+              value: 'false'
+            - name: LOG_LEVEL
+              value: info
+          image: ghcr.io/defenseunicorns/pepr/private/controller:v1.2.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTPS
+            initialDelaySeconds: 10
+          name: server
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTPS
+            initialDelaySeconds: 10
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 500m
+            requests:
+              memory: 256Mi
+              cpu: 200m
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/certs
+              name: tls-certs
+              readOnly: true
+            - mountPath: /app/api-path
+              name: api-path
+              readOnly: true
+            - mountPath: /app/load
+              name: module
+              readOnly: true
+      priorityClassName: system-node-critical
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: pepr-pgbouncer
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: pepr-pgbouncer-tls
+        - name: api-path
+          secret:
+            secretName: pepr-pgbouncer-api-path
+        - name: module
+          secret:
+            secretName: pepr-pgbouncer-module
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    pepr.dev/controller: admission
+  name: pepr-pgbouncer
+  namespace: pepr-system
+spec:
+  ports:
+    - port: 443
+      targetPort: 3000
+  selector:
+    app: pepr-pgbouncer
+    pepr.dev/controller: admission
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    pepr.dev/controller: watcher
+  name: pepr-pgbouncer-watcher
+  namespace: pepr-system
+spec:
+  ports:
+    - port: 443
+      targetPort: 3000
+  selector:
+    app: pepr-pgbouncer-watcher
+    pepr.dev/controller: watcher
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: pepr-pgbouncer
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      caBundle: >-
+        LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlDdERDQ0FaeWdBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBY01Sb3dHQVlEVlFRREV4RlFaWEJ5DQpJRVZ3YUdWdFpYSmhiQ0JEUVRBZUZ3MHlOakEyTURRd01EUXhOVEphRncweU56QTJNRFF3TURReE5USmFNQUF3DQpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDM1R4cC9IeTd3Wm5kaisxOGFQc3VGDQpoMlFkOE9EaFRycjNJd25zOU41SFczYVdRdTVGK2cwVTM3cjdEVi9ZR2VuNW9ZMzY2TG1XV1ZMNy9sOWdTaFJZDQpZMkIwdHgvZzBma2JhemVXZGZBT3Z2T2pHdUJIL3Npc0VTQ3RhV3NXalFadFhXREhaamZIbmgzY1FqbUxmRmhzDQpiNlRKdWdvbEZkREcrc3FvOTZYQTZnVW42aUNXMWZyTTBhREdxT1MvWnV1aDQ2Q0g3bnNHby9lMGRKazZFeFB0DQpMSEpDZkx3UUp6MklrcGIzNyt4dW9oMnJPODZEeDVsdGhhYTA0TXFmRGlEd2tYNTE3dHRRd2F2QTFKdGJ3aVMwDQpiOUNSMzAyOEVIRUFYNE1LYitWd0hsMHZiWERCckNONkdySnRYNmVydWZlT2I0UVUxWkNvdzJ0c0hnL2x5YU0vDQpBZ01CQUFHakhUQWJNQXdHQTFVZEV3UUZNQU1CQWY4d0N3WURWUjBQQkFRREFnTDBNQTBHQ1NxR1NJYjNEUUVCDQpDd1VBQTRJQkFRQjlEOUlFVGpaWm9kWUd4Vmg0QXZ5MFJ0cG9BdWF0ZEhiZVFZVmV0MUV3ZGh5ajVTbkVjd1pzDQpncFFtZWJOZmF5Z2ZtUm44S3hxSmttWWJqdnlPSER6N0YrbnlHcCtETUJkMEEwdXZnOGRhaElUbFEyZE1tSVRHDQp6NkZMV1BBeGFvU1liN3htUUtmU1ZBalVKZU5jK1RqTnR5dzU1eFNRcEdkVjdBK3J5aEUxZXJPNGRRSlh1UWZyDQpGcDhNbGJ4aVZGSWlTQ3ZCVHRPUDRWNWJQRklkdGtBNVNoSXZrME9nY0JyVFlJVVlCUjNDalgzRlpLWGUwUDBqDQoyZHV6TGh6T1hoQ2ZlOXlCSW1DeTQwUGd6eTNITWVXTHlKSURFZktyT0VyNE1zcWxCdEZWT0NIbHpRSlN0UU51DQpKQ0lMNjY3S05wUE5qNEQ0NHEzdHJQNStOcGZtUWkrSg0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ0K
+      service:
+        name: pepr-pgbouncer
+        namespace: pepr-system
+        path: >-
+          /mutate/b0ac8b4fddc6889f561a2f903b35d056a83a67e9f794f63037b24a75513f5c20
+    failurePolicy: Ignore
+    matchPolicy: Equivalent
+    name: pepr-pgbouncer.pepr.dev
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values:
+            - kube-system
+            - pepr-system
+    rules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - deployments
+    sideEffects: None
+    timeoutSeconds: 10
