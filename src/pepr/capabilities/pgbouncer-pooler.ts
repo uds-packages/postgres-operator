@@ -12,9 +12,9 @@ export const Pgbouncer = new Capability({
 const { When } = Pgbouncer;
 
 // Exported for reuse by the Mutator task.
-export const NS = "postgres";
-export const SOURCE_SECRET = "pooler.pg-cluster.credentials.postgresql.acid.zalan.do";
-export const DERIVED_SECRET = "pgbouncer-userlist";
+const NS = "postgres";
+const SOURCE_SECRET = "pooler.pg-cluster.credentials.postgresql.acid.zalan.do";
+const DERIVED_SECRET = "pgbouncer-userlist";
 
 // pgbouncer auth_file format: `"user" "password"` with "" escaping inside quotes.
 export function renderUserlist(username: string, password: string): string {

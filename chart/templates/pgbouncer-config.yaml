@@ -2,21 +2,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 {{- if and .Values.postgresql.enabled (or .Values.postgresql.enableConnectionPooler .Values.postgresql.enableReplicaConnectionPooler) }}
-{{- $p := .Values.postgresql.poolerConfig | default dict }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pgbouncer-config
   namespace: postgres
 data:
+{{- with .Values.postgresql.configConnectionPooler -}}
   pgbouncer.ini: |
     [databases]
     * = host=pg-cluster.postgres.svc.cluster.local port=5432 auth_user=pooler
     postgres = host=pg-cluster.postgres.svc.cluster.local port=5432 auth_user=pooler
 
     [pgbouncer]
-    pool_mode = {{ $p.poolMode | default "transaction" }}
-    listen_port = {{ $p.listenPort | default 5432 }}
+    pool_mode = {{ .connection_pooler_mode | default "transaction" }}
+    listen_port = {{ .connection_pooler_listen_port | default 5432 }}
     listen_addr = *
     admin_users = pooler
     auth_dbname = postgres
@@ -27,11 +27,12 @@ data:
     log_connections = 0
     log_disconnections = 0
     max_prepared_statements = 200
-    default_pool_size = {{ $p.defaultPoolSize | default 20 }}
-    reserve_pool_size = {{ $p.reservePoolSize | default 10 }}
-    max_client_conn = {{ $p.maxClientConn | default 10000 }}
-    max_db_connections = {{ $p.maxDBConnections | default 60 }}
+    default_pool_size = {{ .connection_pooler_default_pool_size | default 20 }}
+    reserve_pool_size = {{ .connection_pooler_reserve_pool_size | default 10 }}
+    max_client_conn = {{ .connection_pooler_max_client_conn | default 10000 }}
+    max_db_connections = {{ .connection_pooler_max_db_connections | default 60 }}
     idle_transaction_timeout = 600
     server_login_retry = 5
     ignore_startup_parameters = extra_float_digits,options
+{{- end -}}
 {{- end }}
