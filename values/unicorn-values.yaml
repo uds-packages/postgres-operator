@@ -8,6 +8,6 @@ image:
 configConnectionPooler:
   connection_pooler_image: "cgr.dev/defenseunicorns.com/pgbouncer-fips:v1.25.2"
 configLogicalBackup:
-  logical_backup_docker_image: "quay.io/rfcurated/zalando/postgres-operator/logical-backup:1.15-jammy-scratch-fips-rfcurated"
+  logical_backup_docker_image: "registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.15.1"
 configGeneral:
   docker_image: "cgr.dev/defenseunicorns.com/spilo-17:v4.1.2"

@@ -30,20 +30,14 @@ tasks:
 
   - name: build-pepr
     description: |
-      Build the pgbouncer Pepr module manifest into src/pepr/dist (gitignored).
-      For local iteration only — `zarf package create --flavor unicorn` runs this
-      automatically via the unicorn component's onCreate action. Requires Node.js 20+ and yq.
+      Build the pgbouncer Pepr module manifest and copy it to the repo-root /manifests directory.
     actions:
       - description: "Build the pgbouncer Pepr module"
         dir: src/pepr
         cmd: |
           npm ci --no-audit --no-fund
           npx pepr build --custom-image ghcr.io/defenseunicorns/pepr/private/controller:v1.2.1
-          # Strip the shared pepr-system Namespace (owned by uds-core) so package removal
-          # never cascade-deletes it. See zarf.yaml onCreate for the rationale.
-          yq ea -i 'select(.kind != "Namespace")' dist/pepr-module-pgbouncer.yaml
-          # Copy the built manifest to the repo-root manifests/ dir so it can be committed
-          # (cmd runs in src/pepr, so the root is two levels up).
+          uds zarf tools yq ea -i 'select(.kind != "Namespace")' dist/pepr-module-pgbouncer.yaml
           mkdir -p ../../manifests
           cp dist/pepr-module-pgbouncer.yaml ../../manifests/pepr-module-pgbouncer.yaml
 
