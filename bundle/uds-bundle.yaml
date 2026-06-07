@@ -14,6 +14,11 @@ packages:
     overrides:
       postgres-operator:
         uds-postgres-config:
+          values:
+            - path: postgresql.enableConnectionPooler
+              value: true
+            - path: postgresql.enableReplicaConnectionPooler
+              value: true
           variables:
             - name: POSTGRESQL
               description: "Configure postgres using CRs via the uds-postgres-config chart"

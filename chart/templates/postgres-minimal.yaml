@@ -14,6 +14,16 @@ spec:
   volume:
     size: {{ .Values.postgresql.volume.size | quote }}
   numberOfInstances: {{ .Values.postgresql.numberOfInstances }}
+  {{- if .Values.postgresql.enableConnectionPooler | default false }}
+  enableConnectionPooler: {{ .Values.postgresql.enableConnectionPooler }}
+  {{- end }}
+  {{- if .Values.postgresql.enableReplicaConnectionPooler | default false }}
+  enableReplicaConnectionPooler: {{ .Values.postgresql.enableReplicaConnectionPooler }}
+  {{- end }}
+  {{- with .Values.postgresql.connectionPooler }}
+  connectionPooler:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   users:
     {{- toYaml .Values.postgresql.users | nindent 4 }} # database owner
   databases:

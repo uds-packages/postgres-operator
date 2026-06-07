@@ -24,6 +24,14 @@ spec:
         selector:
           app.kubernetes.io/name: postgres-operator
         remoteGenerated: KubeAPI
+      {{- if or (.Values.postgresql.enableConnectionPooler | default false) (.Values.postgresql.enableReplicaConnectionPooler | default false) }}
+      - direction: Egress
+        selector:
+          app.kubernetes.io/name: postgres-operator
+        remoteNamespace: postgres
+        remoteSelector:
+          application: db-connection-pooler
+      {{- end }}
 
       # Custom rules for other scenarios (such as connecting to a non-default pg cluster)
       {{- range .Values.additionalNetworkAllow }}

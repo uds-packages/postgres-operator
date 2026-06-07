@@ -25,19 +25,19 @@ spec:
       - direction: Egress
         remoteGenerated: IntraNamespace
 
-    {{- if kindIs "slice" .Values.postgresql.ingress -}}
+      {{- if kindIs "slice" .Values.postgresql.ingress -}}
       {{- range .Values.postgresql.ingress }}
       - direction: Ingress
         selector:
           cluster-name: pg-cluster
         {{ . | toYaml | nindent 8 }}
       {{- end }}
-    {{- else }}
+      {{- else }}
       - direction: Ingress
         selector:
           cluster-name: pg-cluster
         {{- .Values.postgresql.ingress | toYaml | nindent 8 }}
-    {{- end }}
+      {{- end }}
 
       - direction: Ingress
         selector:
@@ -50,4 +50,27 @@ spec:
         selector:
           cluster-name: pg-cluster
         remoteGenerated: KubeAPI
+
+      {{- if or (.Values.postgresql.enableConnectionPooler | default false) (.Values.postgresql.enableReplicaConnectionPooler | default false) }}
+      {{- if kindIs "slice" .Values.postgresql.ingress -}}
+      {{- range .Values.postgresql.ingress }}
+      - direction: Ingress
+        selector:
+          application: db-connection-pooler
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- else }}
+      - direction: Ingress
+        selector:
+          application: db-connection-pooler
+        {{- .Values.postgresql.ingress | toYaml | nindent 8 }}
+      {{- end }}
+
+      - direction: Ingress
+        selector:
+          application: db-connection-pooler
+        remoteNamespace: {{ .Release.Namespace }}
+        remoteSelector:
+          app.kubernetes.io/name: postgres-operator
+      {{- end }}
 {{- end }}
