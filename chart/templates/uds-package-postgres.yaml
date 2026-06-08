@@ -56,19 +56,19 @@ spec:
       {{- range .Values.postgresql.ingress }}
       - direction: Ingress
         selector:
-          application: db-connection-pooler
+          connection-pooler: pg-cluster-pooler
         {{ . | toYaml | nindent 8 }}
       {{- end }}
       {{- else }}
       - direction: Ingress
         selector:
-          application: db-connection-pooler
+          connection-pooler: pg-cluster-pooler
         {{- .Values.postgresql.ingress | toYaml | nindent 8 }}
       {{- end }}
 
       - direction: Ingress
         selector:
-          application: db-connection-pooler
+          connection-pooler: pg-cluster-pooler
         remoteNamespace: {{ .Release.Namespace }}
         remoteSelector:
           app.kubernetes.io/name: postgres-operator
