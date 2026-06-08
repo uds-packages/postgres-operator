@@ -89,3 +89,21 @@ components:
                 name: db-seed-job
                 namespace: acid
                 condition: "'{.status.succeeded}'=1"
+
+  - name: test-pooler-connection
+    required: true
+    manifests:
+      - name: pooler-connection-test
+        files:
+          - postgres/pooler-connection-test.yaml
+    images:
+      - docker.io/postgres:18
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: pooler-connection-test
+                namespace: gitlab
+                condition: "'{.status.succeeded}'=1"
