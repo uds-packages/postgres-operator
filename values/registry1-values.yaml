@@ -4,9 +4,35 @@
 image:
   registry: registry1.dso.mil
   repository: ironbank/opensource/zalando/postgres-operator
+  # TODO(pooler-securitycontext): bump this tag once the upstream operator PR adding
+  # connection_pooler_(pod_)security_context is merged, released, and rebuilt in Iron Bank.
+  # The connection_pooler_*_security_context overrides below are inert until the operator
+  # image is that newer build (the v1.15.0 binary ignores the fields, and the upstream
+  # OperatorConfiguration CRD prunes them) — keep them commented until then.
   tag: v1.15.0
 configConnectionPooler:
   connection_pooler_image: "registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.25.1"
+  # The Iron Bank pgbouncer image runs as its own (non-100) pgbouncer UID and owns
+  # /etc/pgbouncer, but the operator hard-codes the pooler pod to RunAsUser/RunAsGroup
+  # 100/101 -> the entrypoint cannot write its cert/ini/auth files (Permission denied).
+  # Once the operator image is the build that supports these fields, set the pod to the
+  # image's real pgbouncer UID/GID. Determine them with:
+  #   kubectl run pgb-id --rm -it --restart=Never \
+  #     --image=registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.25.1 \
+  #     --command -- id
+  # connection_pooler_pod_security_context:
+  #   runAsUser: <IB pgbouncer UID>
+  #   runAsGroup: <IB pgbouncer GID>
+  #   runAsNonRoot: true
+  #   fsGroup: <IB pgbouncer GID>
+  #   seccompProfile:
+  #     type: RuntimeDefault
+  # connection_pooler_security_context:
+  #   allowPrivilegeEscalation: false
+  #   readOnlyRootFilesystem: true
+  #   capabilities:
+  #     drop:
+  #       - ALL
 configLogicalBackup:
   logical_backup_docker_image: "registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.15.1"
 # Note there is not a spilo image in registry1
