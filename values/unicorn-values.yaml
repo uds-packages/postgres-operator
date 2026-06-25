@@ -6,7 +6,7 @@ image:
   repository: defenseunicorns.com/postgres-operator
   tag: 1.15.1
 configConnectionPooler:
-  connection_pooler_image: "cgr.dev/defenseunicorns.com/pgbouncer:1.25.1"
+  connection_pooler_image: "cgr.dev/defenseunicorns.com/pgbouncer:v1.25.2"
 configLogicalBackup:
   logical_backup_docker_image: "cgr.dev/defenseunicorns.com/postgres-operator-logical-backup-fips:1.15.1"
 configGeneral:
