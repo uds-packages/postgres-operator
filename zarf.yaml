@@ -88,7 +88,7 @@ components:
     images:
       - cgr.dev/defenseunicorns.com/postgres-operator:1.15.1
       - cgr.dev/defenseunicorns.com/postgres-operator-logical-backup-fips:1.15.1
-      - cgr.dev/defenseunicorns.com/pgbouncer:1.25.1
+      - cgr.dev/defenseunicorns.com/pgbouncer:v1.25.2
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
       - cgr.dev/defenseunicorns.com/spilo-17:4.1.2
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
