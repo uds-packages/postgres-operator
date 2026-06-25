@@ -1,9 +1,4 @@
-# 🏭 UDS Postgres Operator Package
-
-[<img alt="Made for UDS" src="https://raw.githubusercontent.com/defenseunicorns/uds-common/refs/heads/main/docs/assets/made-for-uds-silver.svg" height="20px"/>](https://github.com/defenseunicorns/uds-core)
-[![Latest Release](https://img.shields.io/github/v/release/uds-packages/postgres-operator)](https://github.com/uds-packages/postgres-operator/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/uds-packages/postgres-operator/release.yaml)](https://github.com/uds-packages/postgres-operator/actions/workflows/release.yaml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator/badge)](https://api.securityscorecards.dev/projects/github.com/uds-packages/postgres-operator)
+# UDS Postgres Operator Package
 
 This package is designed for use as part of a [UDS Bundle](https://docs.defenseunicorns.com/core/concepts/configuration--packaging/bundles/) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
 
