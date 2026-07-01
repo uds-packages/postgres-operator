@@ -27,7 +27,7 @@ jobs:
         exclude:
           - flavor: registry1
             architecture: arm64
-    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@ad37f65401031af319e4970f705fda0ae849996b # v1.24.14
+    uses: defenseunicorns/uds-common/.github/workflows/callable-publish.yaml@ef8767c2d84fc4d23c37f3b7dac3c6292ee76c11 # v1.25.0
     with:
       flavor: ${{ matrix.flavor }}
       options: --set BASE_REPO="ghcr.io/uds-packages"
