@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 metrics:
-  image: "cgr.dev/defenseunicorns.com/prometheus-postgres-exporter:0.19.1"
+  image: "cgr.dev/defenseunicorns.com/prometheus-postgres-exporter:v0.20.0"
 
 job:
   image: "cgr.dev/defenseunicorns.com/spilo-17:4.1.2"
