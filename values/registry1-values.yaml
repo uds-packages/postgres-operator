@@ -4,9 +4,9 @@
 image:
   registry: registry1.dso.mil
   repository: ironbank/opensource/zalando/postgres-operator
-  tag: v1.15.0
+  tag: v1.15.1
 configConnectionPooler:
-  connection_pooler_image: "registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.25.1"
+  connection_pooler_image: "registry1.dso.mil/ironbank/opensource/zalando/pgbouncer:1.25.2"
 configLogicalBackup:
   logical_backup_docker_image: "registry1.dso.mil/ironbank/opensource/zalando/logical-backup:v1.15.1"
 # Note there is not a spilo image in registry1
