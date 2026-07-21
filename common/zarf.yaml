@@ -15,12 +15,29 @@ components:
         namespace: postgres-operator
         version: 0.1.0
         localPath: ../chart
+        values:
+          - sourcePath: .uds-postgres-config
+            targetPath: .
+            excludePaths:
+              - .uds-postgres-config.job.image
+              - .uds-postgres-config.metrics.image
       - name: postgres-operator
         version: 1.15.1
         namespace: postgres-operator
         url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
         valuesFiles:
           - ../values/values.yaml
+        values:
+          - sourcePath: .postgres-operator
+            targetPath: .
+            excludePaths:
+              - .postgres-operator.image
+              - .postgres-operator.imagePullSecrets
+              - .postgres-operator.configGeneral.docker_image
+              - .postgres-operator.configGeneral.enable_crd_registration
+              - .postgres-operator.configLogicalBackup.logical_backup_docker_image
+              - .postgres-operator.configConnectionPooler.connection_pooler_image
+              - .postgres-operator.securityContext
     actions:
       onDeploy:
         before:
