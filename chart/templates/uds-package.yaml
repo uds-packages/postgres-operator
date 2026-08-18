@@ -25,24 +25,7 @@ spec:
           app.kubernetes.io/name: postgres-operator
         remoteGenerated: KubeAPI
 
-      # Custom rules for other scenarios (such as connecting to a non-default pg cluster)
-      {{- range .Values.additionalNetworkAllow }}
-      - direction: {{ .direction }}
-        {{- if .selector}}
-        selector:
-          {{ .selector | toYaml | nindent 10 }}
-        {{- end }}
-        {{- if not .remoteGenerated }}
-        remoteNamespace: {{ .remoteNamespace }}
-        {{- if .remoteSelector }}
-        remoteSelector:
-          {{ .remoteSelector | toYaml | nindent 10 }}
-        {{- end }}
-        {{- if .port }}
-        port: {{ .port }}
-        {{- end }}
-        {{- else }}
-        remoteGenerated: {{ .remoteGenerated }}
-        {{- end }}
-        description: {{ .description }}
+      # Custom rules for additional networking access
+      {{- with .Values.additionalNetworkAllow }}
+      {{ toYaml . | nindent 6 }}
       {{- end }}
