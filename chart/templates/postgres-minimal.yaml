@@ -1,4 +1,4 @@
-# Copyright 2024 Defense Unicorns
+# Copyright 2024-2026 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 {{- if .Values.postgresql.enabled }}
@@ -81,9 +81,6 @@ spec:
         requests:
           cpu: 100m
           memory: 200M
-      securityContext:
-        runAsUser: 37
-        runAsGroup: 37
       env:
         - name: "DATA_SOURCE_URI"
           value: "$(POD_NAME)/postgres"

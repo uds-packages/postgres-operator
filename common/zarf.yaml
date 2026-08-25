@@ -1,4 +1,4 @@
-# Copyright 2024 Defense Unicorns
+# Copyright 2024-2026 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 kind: ZarfPackageConfig
@@ -22,7 +22,7 @@ components:
               - .uds-postgres-config.job.image
               - .uds-postgres-config.metrics.image
       - name: postgres-operator
-        version: 1.15.1
+        version: 2.0.2
         namespace: postgres-operator
         url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
         valuesFiles:
@@ -47,6 +47,13 @@ components:
                 ./zarf tools kubectl annotate --overwrite postgresql -n postgres pg-cluster meta.helm.sh/release-namespace=postgres-operator || true
                 ./zarf tools kubectl annotate --overwrite service -n postgres pg-cluster-headless meta.helm.sh/release-namespace=postgres-operator || true
                 ./zarf tools kubectl annotate --overwrite package -n postgres postgres meta.helm.sh/release-namespace=postgres-operator || true
+              fi
+          # Upstream v2.0.2 hard-codes Recreate in the Deployment strategy (https://github.com/zalando/postgres-operator/pull/3164/files).
+          # v1 Deployments retain rollingUpdate, which Zarf's SSA upgrade can submit with Recreate and Kubernetes rejects.
+          # Remove this shim when upgrades from v1.x packages are no longer supported.
+          - cmd: |
+              if ./zarf tools kubectl get deployment postgres-operator -n postgres-operator >/dev/null 2>&1; then
+                ./zarf tools kubectl patch deployment postgres-operator -n postgres-operator --type=json --patch='[{"op":"replace","path":"/spec/strategy","value":{"type":"Recreate"}}]'
               fi
         after:
           - description: Validate Postgres Operator Package
