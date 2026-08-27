@@ -1,83 +1,84 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-kind: ZarfPackageConfig
+# NOTE: currently there is no schema published for v1beta1 + ZarfComponentConfig
+apiVersion: zarf.dev/v1beta1
+kind: ZarfComponentConfig
 metadata:
   name: uds-postgres-operator-common
-  description: "UDS Postgres Operator Common"
-  url: https://github.com/zalando/postgres-operator
-
-components:
+  description: UDS Postgres Operator Common
+  annotations:
+    dev.uds.url: https://github.com/zalando/postgres-operator
+component:
+  charts:
+  - name: uds-postgres-config
+    namespace: postgres-operator
+    local:
+      path: ../chart
+    values:
+    - sourcePath: .uds-postgres-config
+      targetPath: .
+      excludePaths:
+      - .uds-postgres-config.job.image
+      - .uds-postgres-config.metrics.image
   - name: postgres-operator
-    required: true
-    charts:
-      - name: uds-postgres-config
-        namespace: postgres-operator
-        version: 0.1.0
-        localPath: ../chart
-        values:
-          - sourcePath: .uds-postgres-config
-            targetPath: .
-            excludePaths:
-              - .uds-postgres-config.job.image
-              - .uds-postgres-config.metrics.image
-      - name: postgres-operator
-        version: 1.15.1
-        namespace: postgres-operator
-        url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
-        valuesFiles:
-          - ../values/values.yaml
-        values:
-          - sourcePath: .postgres-operator
-            targetPath: .
-            excludePaths:
-              - .postgres-operator.image
-              - .postgres-operator.imagePullSecrets
-              - .postgres-operator.configGeneral.docker_image
-              - .postgres-operator.configGeneral.enable_crd_registration
-              - .postgres-operator.configLogicalBackup.logical_backup_docker_image
-              - .postgres-operator.configConnectionPooler.connection_pooler_image
-              - .postgres-operator.securityContext
-    actions:
-      onDeploy:
-        before:
-          # this shims postgres operator versions v0.11.1-uds.1 and below to the new config chart namespace layout
-          - cmd: |
-              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
-                ./zarf tools kubectl annotate --overwrite postgresql -n postgres pg-cluster meta.helm.sh/release-namespace=postgres-operator || true
-                ./zarf tools kubectl annotate --overwrite service -n postgres pg-cluster-headless meta.helm.sh/release-namespace=postgres-operator || true
-                ./zarf tools kubectl annotate --overwrite package -n postgres postgres meta.helm.sh/release-namespace=postgres-operator || true
-              fi
-        after:
-          - description: Validate Postgres Operator Package
-            maxTotalSeconds: 300
-            wait:
-              cluster:
-                kind: packages.uds.dev
-                name: postgres-operator
-                namespace: postgres-operator
-                condition: "'{.status.phase}'=Ready"
-          - description: Validate Postgres Package
-            maxTotalSeconds: 300
-            cmd: |
-              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
-                if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
-                  ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
-                fi
-              fi
-          - description: Postgres Operator to be Healthy
-            maxTotalSeconds: 90
-            wait:
-              cluster:
-                kind: pod
-                name: app.kubernetes.io/name=postgres-operator
-                namespace: postgres-operator
-                condition: Ready
-          - description: Wait for Postgres cluster to be Running if postgresql.enabled is true
-            maxTotalSeconds: 300
-            cmd: |
-              if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
-                if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
-                  ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
-                fi
-              fi
+    namespace: postgres-operator
+    helmRepository:
+      url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
+      name: postgres-operator
+      version: "1.15.1"
+    valuesFiles:
+    - path: ../values/values.yaml
+    values:
+    - sourcePath: .postgres-operator
+      targetPath: .
+      excludePaths:
+      - .postgres-operator.image
+      - .postgres-operator.imagePullSecrets
+      - .postgres-operator.configGeneral.docker_image
+      - .postgres-operator.configGeneral.enable_crd_registration
+      - .postgres-operator.configLogicalBackup.logical_backup_docker_image
+      - .postgres-operator.configConnectionPooler.connection_pooler_image
+      - .postgres-operator.securityContext
+  actions:
+    onDeploy:
+      before:
+      - cmd: |
+          if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+            ./zarf tools kubectl annotate --overwrite postgresql -n postgres pg-cluster meta.helm.sh/release-namespace=postgres-operator || true
+            ./zarf tools kubectl annotate --overwrite service -n postgres pg-cluster-headless meta.helm.sh/release-namespace=postgres-operator || true
+            ./zarf tools kubectl annotate --overwrite package -n postgres postgres meta.helm.sh/release-namespace=postgres-operator || true
+          fi
+      onSuccess:
+      - description: Validate Postgres Operator Package
+        maxTotalSeconds: 300
+        wait:
+          cluster:
+            kind: packages.uds.dev
+            name: postgres-operator
+            namespace: postgres-operator
+            condition: '''{.status.phase}''=Ready'
+      - description: Validate Postgres Package
+        maxTotalSeconds: 300
+        cmd: |
+          if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+            if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
+              ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+            fi
+          fi
+      - description: Postgres Operator to be Healthy
+        maxTotalSeconds: 90
+        wait:
+          cluster:
+            kind: pod
+            name: app.kubernetes.io/name=postgres-operator
+            namespace: postgres-operator
+            condition: Ready
+      - description: Wait for Postgres cluster to be Running if postgresql.enabled is true
+        maxTotalSeconds: 300
+        cmd: |
+          if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
+            if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
+              ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+            fi
+          fi
