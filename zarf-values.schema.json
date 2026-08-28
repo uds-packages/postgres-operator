@@ -643,6 +643,20 @@
             }
           },
           "type": "object"
+        },
+        "customPodMonitor": {
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "additionalAnnotations": {
+              "type": "object"
+            },
+            "additionalLabels": {
+              "type": "object"
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"

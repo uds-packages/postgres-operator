@@ -8,6 +8,7 @@ metadata:
   name: postgres
   namespace: postgres
 spec:
+  {{- if not .Values.customPodMonitor.enabled }}
   monitor:
     - selector:
         application: spilo
@@ -15,6 +16,7 @@ spec:
       targetPort: 9187
       kind: PodMonitor
       description: "Postgres Exporter Port"
+  {{- end }}
   network:
     serviceMesh:
       mode: {{ if .Values.ambient }}ambient{{ else }}sidecar{{ end }}
@@ -50,4 +52,13 @@ spec:
         selector:
           cluster-name: pg-cluster
         remoteGenerated: KubeAPI
+
+      {{- if .Values.customPodMonitor.enabled }}
+      - direction: Ingress
+        remoteNamespace: monitoring
+        remoteSelector:
+          app.kubernetes.io/name: prometheus
+        port: 9187
+        description: "Prometheus scrape of postgres-exporter"
+      {{- end }}
 {{- end }}

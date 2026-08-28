@@ -1,0 +1,38 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+{{- if .Values.customPodMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: postgres-exporter-pod-monitor
+  {{- if .Values.customPodMonitor.additionalLabels }}
+  labels:
+    {{- toYaml .Values.customPodMonitor.additionalLabels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.customPodMonitor.additionalAnnotations }}
+  annotations:
+    {{- toYaml .Values.customPodMonitor.additionalAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      application: spilo
+  podMetricsEndpoints:
+    - port: exporter
+      path: /metrics
+      podTargetLabels:
+        - cluster_name
+        - spilo_role
+        - team
+      # relabelings:
+      #   - action: replace
+      #     sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
+      #     targetLabel: cluster_name
+      #   - action: replace
+      #     sourceLabels: [__meta_kubernetes_pod_label_spilo_role]
+      #     targetLabel: spilo_role
+      #   - action: replace
+      #     sourceLabels: [__meta_kubernetes_pod_label_team]
+      #     targetLabel: team
+{{- end -}}

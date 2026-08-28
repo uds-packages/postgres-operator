@@ -54,3 +54,10 @@ additionalNetworkAllow: []
   #   remoteSelector:
   #     cluster-name: pg-cluster
   #   description: "Egress to a non-default pg cluster"
+
+# create a custom PodMonitor for the postgres exporter, specifically to include postgresql CRD labels (cluster_name, team_id, spilo_role)
+# NOTE: enabling this will disable the PodMonitor created by the UDS Package CR (as relabelings are required and not supported by the uds-operator)
+customPodMonitor:
+  enabled: false
+  additionalLabels: []
+  additionalAnnotations: []
