@@ -25,14 +25,9 @@ spec:
         - cluster_name
         - spilo_role
         - team
-      # relabelings:
-      #   - action: replace
-      #     sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
-      #     targetLabel: cluster_name
-      #   - action: replace
-      #     sourceLabels: [__meta_kubernetes_pod_label_spilo_role]
-      #     targetLabel: spilo_role
-      #   - action: replace
-      #     sourceLabels: [__meta_kubernetes_pod_label_team]
-      #     targetLabel: team
+      # relabelings: []
+      {{- if .Values.customPodMonitor.relabelings }}
+      relabelings:
+        {{- toYaml .Values.customPodMonitor.relabelings | nindent 8 }}
+      {{- end }}
 {{- end -}}

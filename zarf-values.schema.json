@@ -654,6 +654,9 @@
             },
             "additionalLabels": {
               "type": "object"
+            },
+            "relabelings": {
+              "type": "array"
             }
           },
           "type": "object"
