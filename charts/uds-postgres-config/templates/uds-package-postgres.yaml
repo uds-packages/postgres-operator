@@ -8,7 +8,7 @@ metadata:
   name: postgres
   namespace: postgres
 spec:
-  {{- if not .Values.customPodMonitor.enabled }}
+  {{- if not .Values.monitoring.enabled }}
   monitor:
     - selector:
         application: spilo
@@ -52,24 +52,4 @@ spec:
         selector:
           cluster-name: pg-cluster
         remoteGenerated: KubeAPI
-
-      {{- if .Values.customPodMonitor.enabled }}
-      - direction: Ingress
-        remoteNamespace: monitoring
-        remoteSelector:
-          app.kubernetes.io/name: prometheus
-        port: 9187
-        description: "Prometheus scrape of postgres-exporter"
-      {{- end }}
-
-      {{- if .Values.crdMetrics.enabled }}
-      - direction: Ingress
-        selector:
-          app.kubernetes.io/name: postgres-crd-metrics
-        remoteNamespace: monitoring
-        remoteSelector:
-          app.kubernetes.io/name: prometheus
-        port: 8080
-        description: "Prometheus scrape of postgres-crd-metrics"
-      {{- end }}
-      {{- end }}
+{{- end }}

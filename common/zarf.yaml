@@ -1,6 +1,6 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
-
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
 kind: ZarfPackageConfig
 metadata:
   name: uds-postgres-operator-common
@@ -81,6 +81,7 @@ components:
                   ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
                 fi
               fi
+  
   - name: crd-metrics
     required: false
     charts:
@@ -93,3 +94,13 @@ components:
             targetPath: .
             excludePaths:
               - .crd-metrics.image
+    healthChecks:
+      - apiVersion: uds.dev/v1alpha1
+        kind: Package
+        name: crd-metrics
+        namespace: postgres-operator
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: crd-metrics
+        namespace: postgres-operator
+
