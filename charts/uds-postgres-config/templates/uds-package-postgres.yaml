@@ -61,4 +61,15 @@ spec:
         port: 9187
         description: "Prometheus scrape of postgres-exporter"
       {{- end }}
-{{- end }}
+
+      {{- if .Values.crdMetrics.enabled }}
+      - direction: Ingress
+        selector:
+          app.kubernetes.io/name: postgres-crd-metrics
+        remoteNamespace: monitoring
+        remoteSelector:
+          app.kubernetes.io/name: prometheus
+        port: 8080
+        description: "Prometheus scrape of postgres-crd-metrics"
+      {{- end }}
+      {{- end }}

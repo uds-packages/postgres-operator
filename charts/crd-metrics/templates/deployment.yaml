@@ -1,0 +1,71 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-crd-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.crdMetrics.replicas }}
+  selector:
+    matchLabels:
+      {{- include "postgres-crd-metrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "postgres-crd-metrics.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/crd-metrics-config.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: postgres-crd-metrics
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: kube-state-metrics
+          image: {{ .Values.crdMetrics.image | quote }}
+          args:
+            - --custom-resource-state-only=true
+            - --custom-resource-state-config-file=/etc/ksm/config.yaml
+            - --port=8080
+            - --telemetry-port=8081
+            {{- with .Values.crdMetrics.namespaces }}
+            - --namespaces={{ join "," . }}
+            {{- end }}
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+            - name: telemetry
+              containerPort: 8081
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: 
+                - "ALL"
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http-metrics
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: telemetry
+            initialDelaySeconds: 5
+          resources:
+            {{- toYaml .Values.crdMetrics.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ksm
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: postgres-crd-metrics-config

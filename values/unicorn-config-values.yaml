@@ -6,3 +6,6 @@ metrics:
 
 job:
   image: "cgr.dev/defenseunicorns.com/spilo-17:4.1.2"
+
+crdMetrics:
+  image: "cgr.dev/defenseunicorns.com/kube-state-metrics-fips:v2.20.0"

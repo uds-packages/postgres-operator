@@ -6,3 +6,4 @@
 # remain the single source of truth; deployers override only what they need.
 uds-postgres-config: {}
 postgres-operator: {}
+crd-metrics: {}

@@ -77,6 +77,19 @@ components:
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
       - quay.io/prometheuscommunity/postgres-exporter:v0.20.1
 
+  - name: crd-metrics
+    required: false
+    only:
+      flavor: upstream
+    import:
+      path: common
+    charts:
+      - name: crd-metrics
+        valuesFiles:
+          - ./values/upstream-crd-metrics-values.yaml
+    images:
+      - registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.20.0
+
   - name: postgres-operator
     required: true
     only:

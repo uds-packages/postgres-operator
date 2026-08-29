@@ -7,6 +7,15 @@ metadata:
   name: postgres-operator
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if .Values.monitoring.enabled }}
+  monitor:
+    - selector:
+        application: spilo
+      portName: exporter
+      targetPort: 9187
+      kind: {{ .Values.monitoring.kind | default "PodMonitor"}}
+      description: "Postgres Exporter Port"
+  {{- end }}
   network:
     serviceMesh:
       mode: {{ if .Values.ambient }}ambient{{ else }}sidecar{{ end }}
@@ -23,6 +32,11 @@ spec:
       - direction: Egress
         selector:
           app.kubernetes.io/name: postgres-operator
+        remoteGenerated: KubeAPI
+
+      - direction: Egress
+        selector:
+          app.kubernetes.io/name: postgres-crd-metrics
         remoteGenerated: KubeAPI
 
       # Custom rules for additional networking access

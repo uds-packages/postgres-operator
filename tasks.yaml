@@ -17,7 +17,7 @@ tasks:
     description: Create K3D Cluster with UDS-Core (Dev) and Postgres Operator
     actions:
       - task: create-dev-package
-      - task: setup:k3d-test-cluster
+      - task: setup:k3d-full-cluster
       - task: create-deploy-test-bundle
 
   - name: create-dev-package
@@ -47,14 +47,14 @@ tasks:
     description: Test the health of a Postgres Operator deployment
     actions:
       - task: create-dev-package
-      - task: setup:k3d-test-cluster
+      - task: setup:k3d-full-cluster
       - task: create-deploy-test-bundle
 
   - name: test-upgrade
     description: Test an upgrade from the latest released package to the current branch
     actions:
       - task: upgrade:create-latest-tag-bundle
-      - task: setup:k3d-test-cluster
+      - task: setup:k3d-full-cluster
       - task: deploy:test-bundle
       - task: create-dev-package
       - task: create-deploy-test-bundle
@@ -64,7 +64,7 @@ tasks:
     actions:
       - task: actions:determine-arch
       - task: create:package
-      - task: setup:k3d-test-cluster
+      - task: setup:k3d-full-cluster
       - task: create-deploy-test-bundle
       - description: Publish the package
         task: publish:package

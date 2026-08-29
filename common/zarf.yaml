@@ -14,7 +14,7 @@ components:
       - name: uds-postgres-config
         namespace: postgres-operator
         version: 0.1.0
-        localPath: ../chart
+        localPath: ../charts/uds-postgres-config
         values:
           - sourcePath: .uds-postgres-config
             targetPath: .
@@ -81,3 +81,15 @@ components:
                   ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
                 fi
               fi
+  - name: crd-metrics
+    required: false
+    charts:
+      - name: crd-metrics
+        namespace: postgres-operator
+        version: 0.1.0
+        localPath: ../charts/crd-metrics
+        values:
+          - sourcePath: .crd-metrics
+            targetPath: .
+            excludePaths:
+              - .crd-metrics.image

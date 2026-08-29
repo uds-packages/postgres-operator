@@ -1,20 +1,14 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-{{ if .Values.customPodMonitor.enabled }}
+{{- if .Values.podMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: postgres-exporter-pod-monitor
   namespace: postgres
-  {{- if .Values.customPodMonitor.additionalLabels }}
   labels:
-    {{- toYaml .Values.customPodMonitor.additionalLabels | nindent 4 }}
-  {{- end }}
-  {{- if .Values.customPodMonitor.additionalAnnotations }}
-  annotations:
-    {{- toYaml .Values.customPodMonitor.additionalAnnotations | nindent 4 }}
-  {{- end }}
+    {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -26,8 +20,8 @@ spec:
   podMetricsEndpoints:
     - port: exporter
       path: /metrics
-      {{- if .Values.customPodMonitor.relabelings }}
+      {{- if .Values.podMonitor.relabelings }}
       relabelings:
-        {{- toYaml .Values.customPodMonitor.relabelings | nindent 8 }}
+        {{- toYaml .Values.podMonitor.relabelings | nindent 8 }}
       {{- end }}
-{{ end }}
+{{- end }}

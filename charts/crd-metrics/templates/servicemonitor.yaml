@@ -1,0 +1,17 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgres-crd-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "postgres-crd-metrics.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      honorLabels: true

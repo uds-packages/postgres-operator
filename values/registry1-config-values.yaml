@@ -6,3 +6,6 @@ metrics:
 
 job:
   image: "ghcr.io/zalando/spilo-17:4.0-p3"
+
+crdMetrics:
+  image: "registry1.dso.mil/ironbank/opensource/kubernetes/kube-state-metrics:v2.20.0"

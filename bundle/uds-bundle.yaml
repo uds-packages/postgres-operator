@@ -11,9 +11,14 @@ packages:
   - name: postgres-operator
     path: ../
     ref: dev
+    optionalComponents:
+      - crd-metrics
     overrides:
       postgres-operator:
         uds-postgres-config:
+          values:
+            - path: monitoring.enabled
+              value: false
           variables:
             - name: POSTGRESQL
               description: "Configure postgres using CRs via the uds-postgres-config chart"
@@ -51,3 +56,8 @@ packages:
                   remoteSelector:
                     cluster-name: pg-cluster
                   description: "Egress to a non-default pg cluster"
+      crd-metrics:
+        crd-metrics:
+          values:
+            - path: podMonitor.enabled
+              value: true

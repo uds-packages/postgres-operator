@@ -1,0 +1,119 @@
+# Copyright 2024 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-crd-metrics-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    kind: CustomResourceStateMetrics
+    spec:
+      resources:
+        - groupVersionKind:
+            group: acid.zalan.do
+            version: v1
+            kind: postgresql
+          labelsFromPath:
+            namespace: [metadata, namespace]
+            cluster_name: [metadata, name]
+            team: [spec, teamId]
+          metricNamePrefix: kube_customresource_postgresql
+          metrics:
+            - name: info
+              help: "Zalando postgresql CR metadata"
+              each:
+                type: Info
+                info:
+                  labelsFromPath:
+                    pg_version: [spec, postgresql, version]
+                    docker_image: [spec, dockerImage]
+            - name: created
+              help: "Unix creation timestamp of the postgresql CR"
+              each:
+                type: Gauge
+                gauge:
+                  path: [metadata, creationTimestamp]
+            - name: spec_instances
+              help: "Desired number of Postgres instances"
+              each:
+                type: Gauge
+                gauge:
+                  path: [spec, numberOfInstances]
+            - name: spec_volume_size_bytes
+              help: "Requested persistent volume size"
+              each:
+                type: Gauge
+                gauge:
+                  path: [spec, volume, size]
+            - name: spec_cpu_request_cores
+              help: "CPU request per instance"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, resources, requests, cpu]
+            - name: spec_cpu_limit_cores
+              help: "CPU limit per instance"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, resources, limits, cpu]
+            - name: spec_memory_request_bytes
+              help: "Memory request per instance"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, resources, requests, memory]
+            - name: spec_memory_limit_bytes
+              help: "Memory limit per instance"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, resources, limits, memory]
+            - name: spec_connection_pooler_enabled
+              help: "Whether the connection pooler is enabled"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, enableConnectionPooler]
+            - name: spec_replica_connection_pooler_enabled
+              help: "Whether the replica connection pooler is enabled"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, enableReplicaConnectionPooler]
+            - name: spec_logical_backup_enabled
+              help: "Whether logical backups are enabled"
+              each:
+                type: Gauge
+                gauge:
+                  nilIsZero: true
+                  path: [spec, enableLogicalBackup]
+            - name: status
+              help: "Cluster sync status reported by the operator"
+              each:
+                type: StateSet
+                stateSet:
+                  labelName: status
+                  path: [status, PostgresClusterStatus]
+                  list:
+                    - "Running"
+                    - "Creating"
+                    - "Updating"
+                    - "Syncing"
+                    - "SyncFailed"
+                    - "CreateFailed"
+                    - "UpdateFailed"
+                    - "DeleteFailed"
+                    - "Deleting"
+                    - "Invalid"
+                    - "Adding"

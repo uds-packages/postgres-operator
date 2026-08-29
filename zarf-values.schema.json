@@ -643,17 +643,22 @@
             }
           },
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "crd-metrics": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
         },
-        "customPodMonitor": {
+        "image": {
+          "type": "string"
+        },
+        "podMonitor": {
           "properties": {
             "enabled": {
               "type": "boolean"
-            },
-            "additionalAnnotations": {
-              "type": "object"
-            },
-            "additionalLabels": {
-              "type": "object"
             },
             "relabelings": {
               "type": "array"

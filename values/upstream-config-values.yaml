@@ -6,3 +6,4 @@ metrics:
 
 job:
   image: "ghcr.io/zalando/spilo-17:4.0-p3"
+
