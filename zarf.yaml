@@ -54,6 +54,20 @@ components:
       - ghcr.io/zalando/spilo-17:4.0-p3
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
       - registry1.dso.mil/ironbank/opensource/prometheus/postgres-exporter:v0.20.1
+  
+  - name: crd-metrics
+    required: false
+    only:
+      flavor: registry1
+    import:
+      path: common
+    charts:
+      - name: crd-metrics
+        valuesFiles:
+          - ./values/registry1-crd-metrics-values.yaml
+    images:
+      # Standalone KSM, Iron Bank image
+      - registry1.dso.mil/ironbank/opensource/kubernetes/kube-state-metrics:v2.20.0
 
   - name: postgres-operator
     required: true
@@ -88,6 +102,7 @@ components:
         valuesFiles:
           - ./values/upstream-crd-metrics-values.yaml
     images:
+      # Standalone KSM, upstream image
       - registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.20.0
 
   - name: postgres-operator
@@ -111,3 +126,17 @@ components:
       - cgr.dev/defenseunicorns.com/spilo-17:4.1.2
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
       - cgr.dev/defenseunicorns.com/prometheus-postgres-exporter:v0.20.1
+
+  - name: crd-metrics
+    required: false
+    only:
+      flavor: unicorn
+    import:
+      path: common
+    charts:
+      - name: crd-metrics
+        valuesFiles:
+          - ./values/unicorn-crd-metrics-values.yaml
+    images:
+      # Standalone KSM, unicorn image
+      - cgr.dev/defenseunicorns.com/kube-state-metrics:v2.20.0
