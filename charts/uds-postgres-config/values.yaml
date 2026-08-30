@@ -58,3 +58,11 @@ additionalNetworkAllow: []
 monitoring:
   enabled: true
   kind: PodMonitor
+  podTargetLabels:
+    - cluster_name
+    - spilo_role
+    - team
+  relabelings: []
+    # - action: replace
+    #   sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
+    #   targetLabel: cluster_name
