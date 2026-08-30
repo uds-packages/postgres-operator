@@ -1,0 +1,1434 @@
+{
+    "uid": "postgres-cluster-detail",
+    "title": "Postgres Clusters / Cluster Detail",
+    "description": "Per-cluster PostgreSQL metrics from postgres_exporter, overlaid with declared values from the postgresql.acid.zalan.do CR.",
+    "tags": [
+        "postgres",
+        "zalando",
+        "uds"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 7,
+    "editable": true,
+    "refresh": "1m",
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "datasource",
+                "label": "Data source",
+                "type": "datasource",
+                "query": "prometheus",
+                "current": {},
+                "hide": 0
+            },
+            {
+                "name": "namespace",
+                "label": "Namespace",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                },
+                "query": {
+                    "query": "label_values(kube_customresource_postgresql_info, namespace)",
+                    "refId": "namespace"
+                },
+                "refresh": 2,
+                "includeAll": false,
+                "multi": false,
+                "sort": 1
+            },
+            {
+                "name": "cluster_name",
+                "label": "Cluster",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                },
+                "query": {
+                    "query": "label_values(kube_customresource_postgresql_info{namespace=\"$namespace\"}, cluster_name)",
+                    "refId": "cluster_name"
+                },
+                "refresh": 2,
+                "includeAll": false,
+                "multi": false,
+                "sort": 1
+            },
+            {
+                "name": "datname",
+                "label": "Database",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                },
+                "query": {
+                    "query": "label_values(pg_stat_database_numbackends{namespace=\"$namespace\", cluster_name=\"$cluster_name\"}, datname)",
+                    "refId": "datname"
+                },
+                "refresh": 2,
+                "includeAll": true,
+                "multi": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 100,
+            "type": "row",
+            "title": "Overview",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 1,
+            "type": "stat",
+            "title": "Status",
+            "description": "PostgresClusterStatus from the CR.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 0,
+                "y": 1
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "name"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (status) (kube_customresource_postgresql_status{namespace=\"$namespace\", cluster_name=\"$cluster_name\"} == 1)",
+                    "instant": true,
+                    "legendFormat": "{{status}}"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "stat",
+            "title": "Pods Up / Desired",
+            "description": "Pods reporting pg_up=1 versus spec.numberOfInstances in the CR.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 5,
+                "y": 1
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value_and_name"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count(pg_up{namespace=\"$namespace\", cluster_name=\"$cluster_name\"} == 1) or vector(0)",
+                    "instant": true,
+                    "legendFormat": "up"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_instances{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "instant": true,
+                    "legendFormat": "desired"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "Version",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 10,
+                "y": 1
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "none",
+                "graphMode": "none",
+                "textMode": "name"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (pg_version) (kube_customresource_postgresql_info{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "instant": true,
+                    "legendFormat": "PG {{pg_version}}"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "Team",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 14,
+                "y": 1
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "none",
+                "graphMode": "none",
+                "textMode": "name"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (team) (kube_customresource_postgresql_info{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "instant": true,
+                    "legendFormat": "{{team}}"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "stat",
+            "title": "Uptime (primary)",
+            "description": "Derived from pg_postmaster_start_time_seconds. Requires the postmaster collector to be enabled on the exporter.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 1
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "none",
+                "graphMode": "none",
+                "textMode": "auto"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "time() - max(pg_postmaster_start_time_seconds{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\"})",
+                    "instant": true,
+                    "legendFormat": "uptime"
+                }
+            ]
+        },
+        {
+            "id": 105,
+            "type": "row",
+            "title": "Topology",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 5
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 7,
+            "type": "table",
+            "title": "Pods by Role",
+            "description": "One row per spilo-role, listing the pods currently holding that role. Sourced from pg_up, so it lists scrape targets rather than live pods. A role of \"None\" means the pod carries no spilo-role label \u2014 usually a pod Patroni has not yet assigned, or a PodMonitor that is not promoting the label.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 6
+            },
+            "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "footer": {
+                    "show": false,
+                    "reducer": [
+                        "sum"
+                    ],
+                    "fields": ""
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "label_replace(pg_up{namespace=\"$namespace\", cluster_name=\"$cluster_name\"}, \"spilo_role\", \"None\", \"spilo_role\", \"^$\")",
+                    "instant": true,
+                    "format": "table"
+                }
+            ],
+            "transformations": [
+                {
+                    "id": "filterFieldsByName",
+                    "options": {
+                        "include": {
+                            "pattern": "^(spilo_role|pod)$"
+                        }
+                    }
+                },
+                {
+                    "id": "groupBy",
+                    "options": {
+                        "fields": {
+                            "spilo_role": {
+                                "aggregations": [],
+                                "operation": "groupby"
+                            },
+                            "pod": {
+                                "aggregations": [
+                                    "allValues"
+                                ],
+                                "operation": "aggregate"
+                            }
+                        }
+                    }
+                },
+                {
+                    "id": "sortBy",
+                    "options": {
+                        "fields": {},
+                        "sort": [
+                            {
+                                "field": "spilo_role",
+                                "desc": false
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "indexByName": {},
+                        "renameByName": {
+                            "spilo_role": "Role",
+                            "pod (All values)": "Pods"
+                        }
+                    }
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "wrapText": true
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Role"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 110
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-text"
+                                }
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "type": "value",
+                                        "options": {
+                                            "master": {
+                                                "text": "master",
+                                                "color": "green",
+                                                "index": 0
+                                            },
+                                            "replica": {
+                                                "text": "replica",
+                                                "color": "blue",
+                                                "index": 1
+                                            },
+                                            "None": {
+                                                "text": "None",
+                                                "color": "orange",
+                                                "index": 2
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "special",
+                                        "options": {
+                                            "match": "empty",
+                                            "result": {
+                                                "text": "None",
+                                                "color": "orange",
+                                                "index": 2
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "special",
+                                        "options": {
+                                            "match": "null",
+                                            "result": {
+                                                "text": "None",
+                                                "color": "orange",
+                                                "index": 3
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 42,
+            "type": "timeseries",
+            "title": "Pods by Role Over Time",
+            "description": "Primary/replica counts over time. A simultaneous dip in master and rise in replica (or vice versa) marks a Patroni failover.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 6
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "min": 0,
+                    "decimals": 0,
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 20,
+                        "showPoints": "never",
+                        "lineInterpolation": "stepAfter",
+                        "stacking": {
+                            "mode": "normal"
+                        }
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "master"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "green"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "replica"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "blue"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "None"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "orange"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": []
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count by (spilo_role) (\n  label_replace(pg_up{namespace=\"$namespace\", cluster_name=\"$cluster_name\"}, \"spilo_role\", \"None\", \"spilo_role\", \"^$\")\n)",
+                    "legendFormat": "{{spilo_role}}"
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "Connections",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 14
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 10,
+            "type": "timeseries",
+            "title": "Connections vs max_connections",
+            "description": "Total backends against the server's configured limit.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 15
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "max_connections"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        10
+                                    ]
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull",
+                        "max"
+                    ],
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum by (spilo_role) (pg_stat_database_numbackends{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "{{spilo_role}}"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(pg_settings_max_connections{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "max_connections"
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "type": "timeseries",
+            "title": "Connections by Database",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 15
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 20,
+                        "showPoints": "never",
+                        "stacking": {
+                            "mode": "normal"
+                        }
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum by (datname) (pg_stat_database_numbackends{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"})",
+                    "legendFormat": "{{datname}}"
+                }
+            ]
+        },
+        {
+            "id": 102,
+            "type": "row",
+            "title": "Throughput",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 23
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 20,
+            "type": "timeseries",
+            "title": "Transactions / sec",
+            "description": "Commit and rollback rate on the primary.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 24
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "rollback"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "orange"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_xact_commit{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "commit"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_xact_rollback{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "rollback"
+                }
+            ]
+        },
+        {
+            "id": 21,
+            "type": "timeseries",
+            "title": "Cache Hit Ratio",
+            "description": "blks_hit / (blks_hit + blks_read). Sustained values below ~0.95 often indicate undersized shared_buffers.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 24
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "min": 0,
+                    "max": 1,
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 0.95
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_blks_hit{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))\n/\nclamp_min(\n  sum(rate(pg_stat_database_blks_hit{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))\n  + sum(rate(pg_stat_database_blks_read{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval])),\n  1\n)",
+                    "legendFormat": "hit ratio"
+                }
+            ]
+        },
+        {
+            "id": 22,
+            "type": "timeseries",
+            "title": "Deadlocks & Conflicts / sec",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 24
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_deadlocks{namespace=\"$namespace\", cluster_name=\"$cluster_name\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "deadlocks"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_conflicts{namespace=\"$namespace\", cluster_name=\"$cluster_name\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "conflicts"
+                }
+            ]
+        },
+        {
+            "id": 103,
+            "type": "row",
+            "title": "Capacity vs CR Spec",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 32
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 30,
+            "type": "timeseries",
+            "title": "Database Size vs Declared Volume",
+            "description": "Sum of database sizes on the primary against spec.volume.size from the CR. The dashed line is per-instance capacity.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 33
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "bytes",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "volume capacity"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        10
+                                    ]
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(pg_database_size_bytes{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\"})",
+                    "legendFormat": "database size"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_volume_size_bytes{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "volume capacity"
+                }
+            ]
+        },
+        {
+            "id": 31,
+            "type": "timeseries",
+            "title": "CPU vs CR Request / Limit",
+            "description": "Actual container CPU joined to the CR's declared request and limit. Uses kube_pod_labels as the bridge, since cAdvisor metrics do not pass through the PodMonitor.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 33
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "request|limit"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        10
+                                    ]
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull",
+                        "max"
+                    ],
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum by (pod) (\n  rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container=\"postgres\"}[$__rate_interval])\n    * on (namespace, pod) group_left(cluster_name)\n    label_replace(kube_pod_labels{namespace=\"$namespace\", label_application=\"spilo\", label_cluster_name=\"$cluster_name\"}, \"cluster_name\", \"$1\", \"label_cluster_name\", \"(.*)\")\n)",
+                    "legendFormat": "{{pod}}"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_cpu_request_cores{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "request"
+                },
+                {
+                    "refId": "C",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_cpu_limit_cores{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "limit"
+                }
+            ]
+        },
+        {
+            "id": 32,
+            "type": "timeseries",
+            "title": "Memory vs CR Request / Limit",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 33
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "bytes",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "request|limit"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        10
+                                    ]
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull",
+                        "max"
+                    ],
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum by (pod) (\n  container_memory_working_set_bytes{namespace=\"$namespace\", container=\"postgres\"}\n    * on (namespace, pod) group_left(cluster_name)\n    label_replace(kube_pod_labels{namespace=\"$namespace\", label_application=\"spilo\", label_cluster_name=\"$cluster_name\"}, \"cluster_name\", \"$1\", \"label_cluster_name\", \"(.*)\")\n)",
+                    "legendFormat": "{{pod}}"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_memory_request_bytes{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "request"
+                },
+                {
+                    "refId": "C",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max(kube_customresource_postgresql_spec_memory_limit_bytes{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "limit"
+                }
+            ]
+        },
+        {
+            "id": 104,
+            "type": "row",
+            "title": "Replication",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 41
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 40,
+            "type": "timeseries",
+            "title": "Replication Lag",
+            "description": "Replica lag in seconds. Metric name varies by exporter version \u2014 adjust to pg_replication_lag if pg_replication_lag_seconds is absent.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 42
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (pod) (pg_replication_lag_seconds{namespace=\"$namespace\", cluster_name=\"$cluster_name\"})",
+                    "legendFormat": "{{pod}}"
+                }
+            ]
+        },
+        {
+            "id": 41,
+            "type": "timeseries",
+            "title": "Tuple Operations / sec",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 42
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "lineWidth": 1,
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_tup_inserted{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "inserted"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_tup_updated{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "updated"
+                },
+                {
+                    "refId": "C",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_tup_deleted{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "deleted"
+                },
+                {
+                    "refId": "D",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "sum(rate(pg_stat_database_tup_fetched{namespace=\"$namespace\", cluster_name=\"$cluster_name\", spilo_role=\"master\", datname=~\"$datname\"}[$__rate_interval]))",
+                    "legendFormat": "fetched"
+                }
+            ]
+        }
+    ]
+}

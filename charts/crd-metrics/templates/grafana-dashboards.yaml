@@ -1,0 +1,31 @@
+# Copyright 2026 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+{{- if .Values.dashboards.enabled }}
+{{- $files := .Files.Glob "dashboards/*.json" }}
+{{- if $files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgres-crd-metrics.fullname" . }}-dashboards
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
+    {{ .Values.dashboards.label | default "grafana_dashboard" }}: {{ .Values.dashboards.labelValue | default "1" | quote }}
+    {{- with .Values.dashboards.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.dashboards.folder }}
+    grafana_folder: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.dashboards.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  {{- range $path, $_ := $files }}
+  {{ base $path }}: |-
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

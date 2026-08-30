@@ -16,10 +16,12 @@ packages:
     overrides:
       postgres-operator:
         uds-postgres-config:
-          values:
-            - path: monitoring.enabled
-              value: false
           variables:
+            - name: MONITORING_ENABLED
+              description: "Enable monitoring for the postgres operator"
+              path: monitoring
+              default:
+                enabled: false
             - name: POSTGRESQL
               description: "Configure postgres using CRs via the uds-postgres-config chart"
               path: postgresql
@@ -58,6 +60,8 @@ packages:
                   description: "Egress to a non-default pg cluster"
       crd-metrics:
         crd-metrics:
-          values:
-            - path: podMonitor.enabled
-              value: true
+          variables:
+            - name: POD_MONITOR
+              path: podMonitor
+              default:
+                enabled: true

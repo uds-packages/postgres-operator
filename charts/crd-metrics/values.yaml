@@ -16,10 +16,6 @@ resources:
 # Namespaces to watch. Empty list = all namespaces (requires cluster-scoped RBAC).
 namespaces: []
 
-kubeApiCIDR: null
-
-# create a custom PodMonitor for the postgres exporter, specifically to include postgresql CRD labels (cluster_name, team_id, spilo_role)
-# NOTE: enabling this will disable the PodMonitor created by the UDS Package CR (as relabelings are required and not supported by the uds-operator)
 podMonitor:
   enabled: false
   additionalLabels: []
@@ -28,9 +24,11 @@ podMonitor:
     # - action: replace
     #   sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
     #   targetLabel: cluster_name
-    # - action: replace
-    #   sourceLabels: [__meta_kubernetes_pod_label_spilo_role]
-    #   targetLabel: spilo_role
-    # - action: replace
-    #   sourceLabels: [__meta_kubernetes_pod_label_team]
-    #   targetLabel: team
+
+dashboards:
+  enabled: true
+  label: grafana_dashboard
+  labelValue: "1"
+  folder: "Postgres"
+  additionalLabels: {}
+  additionalAnnotations: {}

@@ -9,7 +9,7 @@ metadata:
   labels:
     {{- include "postgres-crd-metrics.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.crdMetrics.replicas }}
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       {{- include "postgres-crd-metrics.selectorLabels" . | nindent 6 }}
@@ -18,7 +18,7 @@ spec:
       labels:
         {{- include "postgres-crd-metrics.labels" . | nindent 8 }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/crd-metrics-config.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
     spec:
       serviceAccountName: postgres-crd-metrics
       automountServiceAccountToken: true
@@ -29,13 +29,13 @@ spec:
           type: RuntimeDefault
       containers:
         - name: kube-state-metrics
-          image: {{ .Values.crdMetrics.image | quote }}
+          image: {{ .Values.image | quote }}
           args:
             - --custom-resource-state-only=true
             - --custom-resource-state-config-file=/etc/ksm/config.yaml
             - --port=8080
             - --telemetry-port=8081
-            {{- with .Values.crdMetrics.namespaces }}
+            {{- with .Values.namespaces }}
             - --namespaces={{ join "," . }}
             {{- end }}
           ports:
@@ -60,7 +60,7 @@ spec:
               port: telemetry
             initialDelaySeconds: 5
           resources:
-            {{- toYaml .Values.crdMetrics.resources | nindent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /etc/ksm

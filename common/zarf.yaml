@@ -95,12 +95,7 @@ components:
             excludePaths:
               - .crd-metrics.image
     healthChecks:
-      - apiVersion: uds.dev/v1alpha1
-        kind: Package
-        name: crd-metrics
-        namespace: postgres-operator
       - apiVersion: apps/v1
         kind: Deployment
-        name: crd-metrics
+        name: postgres-crd-metrics
         namespace: postgres-operator
-

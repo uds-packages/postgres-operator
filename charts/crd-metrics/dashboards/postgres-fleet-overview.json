@@ -1,0 +1,709 @@
+{
+    "uid": "postgres-fleet-overview",
+    "title": "Postgres Clusters / Fleet Overview",
+    "description": "Inventory and health of all postgresql.acid.zalan.do clusters, correlating Zalando CR spec/status with postgres_exporter metrics.",
+    "tags": [
+        "postgres",
+        "zalando",
+        "uds"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "editable": true,
+    "refresh": "1m",
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "datasource",
+                "label": "Data source",
+                "type": "datasource",
+                "query": "prometheus",
+                "current": {},
+                "hide": 0
+            },
+            {
+                "name": "team",
+                "label": "Team",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                },
+                "query": {
+                    "query": "label_values(kube_customresource_postgresql_info, team)",
+                    "refId": "team"
+                },
+                "refresh": 2,
+                "includeAll": true,
+                "multi": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "sort": 1
+            },
+            {
+                "name": "namespace",
+                "label": "Namespace",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                },
+                "query": {
+                    "query": "label_values(kube_customresource_postgresql_info{team=~\"$team\"}, namespace)",
+                    "refId": "namespace"
+                },
+                "refresh": 2,
+                "includeAll": true,
+                "multi": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 1,
+            "type": "stat",
+            "title": "Clusters",
+            "description": "Total postgresql CRs matching the current filters.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "textMode": "auto"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "text"
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count(kube_customresource_postgresql_info{team=~\"$team\", namespace=~\"$namespace\"}) or vector(0)",
+                    "instant": true,
+                    "legendFormat": "clusters"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "stat",
+            "title": "Not Running",
+            "description": "Clusters whose operator-reported PostgresClusterStatus is anything other than Running.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "auto"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count(kube_customresource_postgresql_status{team=~\"$team\", namespace=~\"$namespace\", status!=\"Running\"} == 1) or vector(0)",
+                    "instant": true,
+                    "legendFormat": "not running"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "Instance Shortfall",
+            "description": "Clusters where the number of pods reporting pg_up=1 is below the CR's spec.numberOfInstances.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "auto"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count(\n  (\n    kube_customresource_postgresql_spec_instances{team=~\"$team\", namespace=~\"$namespace\"}\n      - on (namespace, cluster_name)\n      (count by (namespace, cluster_name) (pg_up == 1))\n  ) > 0\n) or vector(0)",
+                    "instant": true,
+                    "legendFormat": "shortfall"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "Missing Exporter",
+            "description": "Clusters that have a CR but no postgres_exporter series. Usually means the PodMonitor does not cover that namespace.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "auto"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "count(\n  kube_customresource_postgresql_info{team=~\"$team\", namespace=~\"$namespace\"}\n    unless on (namespace, cluster_name)\n    count by (namespace, cluster_name) (pg_up)\n) or vector(0)",
+                    "instant": true,
+                    "legendFormat": "missing"
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "type": "table",
+            "title": "Cluster Inventory",
+            "description": "One row per postgresql CR. Declared values come from the CR; Pods Up and Connections come from postgres_exporter. Click a row to open the detail dashboard.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 11,
+                "w": 24,
+                "x": 0,
+                "y": 4
+            },
+            "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "footer": {
+                    "show": false,
+                    "reducer": [
+                        "sum"
+                    ],
+                    "fields": ""
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key, namespace, cluster_name, team, pg_version) (\n  label_join(kube_customresource_postgresql_info{team=~\"$team\", namespace=~\"$namespace\"}, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key, status) (\n  label_join(kube_customresource_postgresql_status{team=~\"$team\", namespace=~\"$namespace\"} == 1, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "C",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(kube_customresource_postgresql_spec_instances{team=~\"$team\", namespace=~\"$namespace\"}, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "D",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(count by (namespace, cluster_name) (pg_up == 1), \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "E",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(kube_customresource_postgresql_spec_volume_size_bytes{team=~\"$team\", namespace=~\"$namespace\"}, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "F",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(sum by (namespace, cluster_name) (pg_stat_database_numbackends), \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "G",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(kube_customresource_postgresql_spec_connection_pooler_enabled{team=~\"$team\", namespace=~\"$namespace\"}, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                },
+                {
+                    "refId": "H",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (cluster_key) (\n  label_join(kube_customresource_postgresql_spec_logical_backup_enabled{team=~\"$team\", namespace=~\"$namespace\"}, \"cluster_key\", \"/\", \"namespace\", \"cluster_name\")\n)",
+                    "instant": true,
+                    "format": "table"
+                }
+            ],
+            "transformations": [
+                {
+                    "id": "joinByField",
+                    "options": {
+                        "byField": "cluster_key",
+                        "mode": "outer"
+                    }
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "Time 1": true,
+                            "Time 2": true,
+                            "Time 3": true,
+                            "Time 4": true,
+                            "Time 5": true,
+                            "Time 6": true,
+                            "Time 7": true,
+                            "Time 8": true,
+                            "cluster_key": true,
+                            "Value #A": true
+                        },
+                        "renameByName": {
+                            "namespace": "Namespace",
+                            "cluster_name": "Cluster",
+                            "team": "Team",
+                            "pg_version": "PG",
+                            "status": "Status",
+                            "Value #C": "Desired",
+                            "Value #D": "Pods Up",
+                            "Value #E": "Volume",
+                            "Value #F": "Connections",
+                            "Value #G": "Pooler",
+                            "Value #H": "Backups"
+                        },
+                        "indexByName": {
+                            "namespace": 0,
+                            "cluster_name": 1,
+                            "team": 2,
+                            "pg_version": 3,
+                            "status": 4,
+                            "Value #C": 5,
+                            "Value #D": 6,
+                            "Value #F": 7,
+                            "Value #E": 8,
+                            "Value #G": 9,
+                            "Value #H": 10
+                        }
+                    }
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        }
+                    },
+                    "unit": "short"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Volume"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "bytes"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Status"
+                        },
+                        "properties": [
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "type": "value",
+                                        "options": {
+                                            "Running": {
+                                                "color": "green",
+                                                "index": 0
+                                            },
+                                            "Creating": {
+                                                "color": "blue",
+                                                "index": 1
+                                            },
+                                            "Updating": {
+                                                "color": "blue",
+                                                "index": 2
+                                            },
+                                            "Syncing": {
+                                                "color": "blue",
+                                                "index": 3
+                                            },
+                                            "SyncFailed": {
+                                                "color": "red",
+                                                "index": 4
+                                            },
+                                            "CreateFailed": {
+                                                "color": "red",
+                                                "index": 5
+                                            },
+                                            "UpdateFailed": {
+                                                "color": "red",
+                                                "index": 6
+                                            },
+                                            "DeleteFailed": {
+                                                "color": "red",
+                                                "index": 7
+                                            },
+                                            "Invalid": {
+                                                "color": "red",
+                                                "index": 8
+                                            },
+                                            "Deleting": {
+                                                "color": "orange",
+                                                "index": 9
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-text"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "Pooler|Backups"
+                        },
+                        "properties": [
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "type": "value",
+                                        "options": {
+                                            "0": {
+                                                "text": "off",
+                                                "color": "text",
+                                                "index": 0
+                                            },
+                                            "1": {
+                                                "text": "on",
+                                                "color": "green",
+                                                "index": 1
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-text"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Pods Up"
+                        },
+                        "properties": [
+                            {
+                                "id": "noValue",
+                                "value": "0"
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-text"
+                                }
+                            },
+                            {
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "red",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "green",
+                                            "value": 1
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Cluster"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "Open cluster detail",
+                                        "url": "/d/postgres-cluster-detail/postgres-clusters-cluster-detail?var-namespace=${__data.fields.Namespace}&var-cluster_name=${__value.raw}&${__url_time_range}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 11,
+            "type": "state-timeline",
+            "title": "Cluster Status Over Time",
+            "description": "PostgresClusterStatus reported by the Zalando operator. Gaps mean the CR did not exist.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 15
+            },
+            "options": {
+                "showValue": "auto",
+                "mergeValues": true,
+                "alignValue": "left",
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                }
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "fillOpacity": 80,
+                        "lineWidth": 0
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "1": {
+                                    "text": "active",
+                                    "index": 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
+                    },
+                    "expr": "max by (namespace, cluster_name, status) (kube_customresource_postgresql_status{team=~\"$team\", namespace=~\"$namespace\"} == 1)",
+                    "legendFormat": "{{namespace}}/{{cluster_name}} — {{status}}"
+                }
+            ]
+        }
+    ]
+}

@@ -7,7 +7,6 @@
 {{- define "postgres-crd-metrics.labels" -}}
 app.kubernetes.io/name: postgres-crd-metrics
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
 {{- end -}}
 
 # label selectors
