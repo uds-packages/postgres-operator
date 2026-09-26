@@ -4,10 +4,10 @@
 image:
   registry: cgr.dev
   repository: defenseunicorns.com/postgres-operator
-  tag: 1.15.1
+  tag: v2.0.2
 configConnectionPooler:
   connection_pooler_image: "cgr.dev/defenseunicorns.com/zalando-pgbouncer:v2.0.2"
 configLogicalBackup:
-  logical_backup_docker_image: "cgr.dev/defenseunicorns.com/postgres-operator-logical-backup-fips:1.15.1"
+  logical_backup_docker_image: "cgr.dev/defenseunicorns.com/postgres-operator-logical-backup-fips:v2.0.2"
 configGeneral:
   docker_image: "cgr.dev/defenseunicorns.com/spilo-17:4.1.2"
