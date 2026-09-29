@@ -26,7 +26,7 @@ spec:
       encoding: {{ .Values.postgresql.encoding}}
       {{ end }}
       # lc-collate and lc-ctype .Values keys have to be named exactly with the dashes
-      # otherwise a known bug in the postgres patroni charts will overwrite the flag
+      # otherwise the postgres chart will overwrite the flags under patroni.initdb
       # with the name of the key from the values file instead of the name of the key here
       {{ if index .Values "postgresql" "lc-collate" }}
       lc-collate: {{ index .Values "postgresql" "lc-collate" }}
