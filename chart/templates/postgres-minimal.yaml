@@ -22,6 +22,18 @@ spec:
     initdb:
       auth-host: scram-sha-256
       auth-local: trust
+      {{ if .Values.postgresql.encoding }}
+      encoding: {{ .Values.postgresql.encoding}}
+      {{ end }}
+      # lc-collate and lc-ctype .Values keys have to be named exactly with the dashes
+      # otherwise a known bug in the postgres patroni charts will overwrite the flag
+      # with the name of the key from the values file instead of the name of the key here
+      {{ if index .Values "postgresql" "lc-collate" }}
+      lc-collate: {{ index .Values "postgresql" "lc-collate" }}
+      {{ end }}
+      {{ if index .Values "postgresql" "lc-ctype" }}
+      lc-ctype: {{ index .Values "postgresql" "lc-ctype" }}
+      {{ end }}
     pg_hba:
     {{- $defaultPgHba := list 
         "local   all             all                                     trust"
