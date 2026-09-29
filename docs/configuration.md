@@ -26,7 +26,7 @@ Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom 
 - `postgresql.tls`: TLS configuration for the Postgres cluster to use (follows the [`tls` section of the Zalando Postgres CR](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#custom-tls-certificates))
 - `postgresql.encoding`: Encoding, applies globally to all databases in the cluster, cannot be changed after initial deployment
 - `postgresql.lc-collate`: Locale setting for string sorting and comparison, applies globally to all databases in the cluster, cannot be changed after initial deployment
-- `postgres.lc-ctype`: Locale setting for character classification, applies globally to all databases in the cluster, cannot be changed after initial deployment
+- `postgresql.lc-ctype`: Locale setting for character classification, applies globally to all databases in the cluster, cannot be changed after initial deployment
 - `postgresql.parameters`: A list of database parameters to set as name/value pairs, if needed. `password_encryption` parameter defaults to `scram-sha-256` and cannot be overridden.
 
 ```yaml
