@@ -15,5 +15,5 @@ permissions:
 
 jobs:
   validate:
-    uses: defenseunicorns/uds-common/.github/workflows/callable-lint.yaml@a2206170adbc21da4d40fb5e79c70165255c81ba # v1.31.0
+    uses: defenseunicorns/uds-common/.github/workflows/callable-lint.yaml@61bbc6bf9424514cd8fd3758f5cc16b8d5234ade # v1.32.0
     secrets: inherit
