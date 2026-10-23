@@ -608,6 +608,15 @@
             "env": {
               "type": "array"
             },
+            "encoding": {
+              "type": "string"
+            },
+            "lc-collate": {
+              "type": "string"
+            },
+            "lc-ctype": {
+              "type": "string"
+            },
             "ingress": {
               "type": "array"
             },
