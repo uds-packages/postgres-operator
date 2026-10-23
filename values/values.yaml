@@ -1,4 +1,4 @@
-# Copyright 2024 Defense Unicorns
+# Copyright 2024-2026 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 configGeneral:
@@ -6,6 +6,7 @@ configGeneral:
   # experienced issues with database corruption when this happens. Deciding instead to do lazy upgrading which means the
   # StatefulSet is modified but a rolling update is not automatically triggered.
   enable_lazy_spilo_upgrade: true
+  kubernetes_use_configmaps: false # false for now, will eventually set to true for an endpoint migration: https://github.com/zalando/postgres-operator/blob/v2.0.3/docs/migrate.md#k8s-endpoints-are-deprecated
   resync_period: "5m"
 configPostgresPodResources:
   default_cpu_request: "100m"
