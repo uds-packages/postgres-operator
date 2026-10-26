@@ -30,6 +30,24 @@ components:
           - https://github.com/zalando/postgres-operator/raw/v2.0.3/charts/postgres-operator/crds/postgresqls.yaml
           - https://github.com/zalando/postgres-operator/raw/v2.0.3/charts/postgres-operator/crds/postgresteams.yaml
         serverSideApply: "false"
+    actions:
+      onDeploy:
+        after:
+          - description: Wait for Postgres CRDs to be established
+            maxTotalSeconds: 150
+            cmd: |
+              uds zarf tools kubectl wait --for=condition=Established --timeout=120s \
+                crd/operatorconfigurations.acid.zalan.do \
+                crd/postgresqls.acid.zalan.do \
+                crd/postgresteams.acid.zalan.do
+          - description: Verify the Postgres APIs are served before installing charts
+            maxTotalSeconds: 120
+            maxRetries: 30
+            cmd: |
+              set -e
+              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/operatorconfigurations >/dev/null
+              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresqls >/dev/null
+              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresteams >/dev/null
   - name: postgres-operator
     required: true
     only:
