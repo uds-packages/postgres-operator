@@ -36,7 +36,7 @@ components:
           - description: Wait for Postgres CRDs to be established
             maxTotalSeconds: 150
             cmd: |
-              uds zarf tools kubectl wait --for=condition=Established --timeout=120s \
+              ./zarf tools kubectl wait --for=condition=Established --timeout=120s \
                 crd/operatorconfigurations.acid.zalan.do \
                 crd/postgresqls.acid.zalan.do \
                 crd/postgresteams.acid.zalan.do
@@ -45,9 +45,9 @@ components:
             maxRetries: 30
             cmd: |
               set -e
-              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/operatorconfigurations >/dev/null
-              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresqls >/dev/null
-              uds zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresteams >/dev/null
+              ./zarf tools kubectl get --raw /apis/acid.zalan.do/v1/operatorconfigurations >/dev/null
+              ./zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresqls >/dev/null
+              ./zarf tools kubectl get --raw /apis/acid.zalan.do/v1/postgresteams >/dev/null
   - name: postgres-operator
     required: true
     only:
