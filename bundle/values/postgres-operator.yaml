@@ -1,0 +1,34 @@
+# Copyright 2026 Defense Unicorns
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
+
+uds-postgres-config:
+  postgresql:
+    enabled: true
+    teamId: uds
+    volume:
+      size: 10Gi
+    numberOfInstances: 2
+    users:
+      gitlab.gitlab: []
+      sonarqube.sonarqube: []
+      mattermost.mattermost: []
+    databases:
+      gitlabdb: gitlab.gitlab
+      mattermostdb: mattermost.mattermost
+      sonarqubedb: sonarqube.sonarqube
+    extensions:
+      gitlabdb: ["hstore"]
+    version: "14"
+    parameters:
+      - name: log_rotation_age
+        value: 2d
+    ingress:
+      - remoteNamespace: gitlab
+  additionalNetworkAllow:
+    - direction: Egress
+      selector:
+        app.kubernetes.io/name: postgres-operator
+      remoteNamespace: acid
+      remoteSelector:
+        cluster-name: pg-cluster
+      description: "Egress to a non-default pg cluster"
