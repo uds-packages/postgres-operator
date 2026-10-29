@@ -1,6 +1,13 @@
 # Configuration
 
-Postgres Operator is configured through the upstream [Zalando Postgres Operator chart](https://github.com/zalando/postgres-operator/tree/master/charts/postgres-operator) as well as a UDS configuration chart. It implements a database for many [applications within a UDS Bundle](https://docs.defenseunicorns.com/core/concepts/configuration--packaging/bundles/) when one is not available in your cloud provider.
+Postgres Operator is configured through the upstream [Zalando Postgres Operator chart](https://github.com/zalando/postgres-operator/tree/master/charts/postgres-operator) as well as a UDS configuration chart. It provides databases for applications within a UDS CLI Next bundle when one is not available in your cloud provider.
+
+## Test Bundle Configuration
+
+Tasks default to `NEXT_MODE=true` and use [`bundle/bundle.uds.hcl`](../bundle/bundle.uds.hcl).
+Set package values in [`postgres-operator.yaml`](../bundle/values/postgres-operator.yaml).
+
+Set Next variables and options in [`bundle/config.uds.hcl`](../bundle/config.uds.hcl).
 
 ## Networking
 
