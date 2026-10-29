@@ -1,6 +1,6 @@
 # UDS Postgres Operator Package
 
-This package is designed for use as part of a [UDS Bundle](https://docs.defenseunicorns.com/core/concepts/configuration--packaging/bundles/) bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core).
+This package is designed for use in a UDS CLI Next bundle deployed on [UDS Core](https://github.com/defenseunicorns/uds-core). See the [test bundle configuration](./docs/configuration.md#test-bundle-configuration).
 
 > The Postgres Operator is a software tool that automates the deployment and management of PostgreSQL databases on Kubernetes, simplifying the process of setting up and maintaining highly available and scalable PostgreSQL clusters.
 
@@ -14,7 +14,7 @@ The released packages can be found in [ghcr](https://github.com/uds-packages/pos
 
 ## UDS Tasks (for local dev and CI)
 
-*For local dev, this requires installing [uds-cli](https://github.com/defenseunicorns/uds-cli?tab=readme-ov-file#install)
+For local dev, install [uds-cli](https://github.com/defenseunicorns/uds-cli?tab=readme-ov-file#install) v0.40.0 or later. Tasks enable CLI Next by default.
 
 After installing uds-cli, for a list of available tasks that can be run in this repository execute the following command:
 
@@ -26,4 +26,4 @@ Please see the [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## Development
 
-When developing this package it is ideal to utilize the json schemas for UDS Bundles, Zarf Packages and Maru Tasks. This involves configuring your IDE to provide schema validation for the respective files used by each application. For guidance on how to set up this schema validation, please refer to the [guide](https://github.com/defenseunicorns/uds-common/blob/main/docs/uds-packages/development/development-ide-configuration.md) in uds-common.
+Use JSON schemas for Zarf package and task YAML files. CLI Next bundle and deploy configuration use HCL in [`bundle/bundle.uds.hcl`](./bundle/bundle.uds.hcl) and [`bundle/config.uds.hcl`](./bundle/config.uds.hcl).
