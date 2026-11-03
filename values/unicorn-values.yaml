@@ -10,4 +10,4 @@ configConnectionPooler:
 configLogicalBackup:
   logical_backup_docker_image: "cgr.dev/defenseunicorns.com/postgres-operator-logical-backup-fips:v2.0.3"
 configGeneral:
-  docker_image: "cgr.dev/defenseunicorns.com/spilo-17:4.1.2"
+  docker_image: "cgr.dev/defenseunicorns.com/spilo:v18-4.1.2"
