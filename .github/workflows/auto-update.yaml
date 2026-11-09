@@ -21,5 +21,5 @@ concurrency:
 
 jobs:
   auto-update:
-    uses: defenseunicorns/uds-common/.github/workflows/callable-auto-update.yaml@a7eabbaa898c6425b480506daf3319b974282d73 # v1.33.0
+    uses: defenseunicorns/uds-common/.github/workflows/callable-auto-update.yaml@477b80085617150a2a4985ac1e70afae968df764 # v1.33.1
     secrets: inherit # Inherits all secrets from the parent workflow.
