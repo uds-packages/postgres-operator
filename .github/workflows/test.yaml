@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: test-flavor
-        uses: defenseunicorns/uds-common/.github/actions/test-flavor@a7eabbaa898c6425b480506daf3319b974282d73 # v1.33.0
+        uses: defenseunicorns/uds-common/.github/actions/test-flavor@477b80085617150a2a4985ac1e70afae968df764 # v1.33.1
         id: test-flavor
     outputs:
       upgrade-flavors: ${{ steps.test-flavor.outputs.upgrade-flavors }}
@@ -41,7 +41,7 @@ jobs:
       matrix:
         type: [install, upgrade]
         flavor: [upstream, registry1, unicorn]
-    uses: defenseunicorns/uds-common/.github/workflows/callable-test.yaml@a7eabbaa898c6425b480506daf3319b974282d73 # v1.33.0
+    uses: defenseunicorns/uds-common/.github/workflows/callable-test.yaml@477b80085617150a2a4985ac1e70afae968df764 # v1.33.1
     with:
       options: --set BASE_REPO="ghcr.io/uds-packages"
       upgrade-flavors: ${{ needs.check-flavor.outputs.upgrade-flavors }}
