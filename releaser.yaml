@@ -1,13 +1,13 @@
-# Copyright 2024 Defense Unicorns
+# Copyright 2024-2026 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 flavors:
   - name: upstream
     # renovate-uds: datasource=docker depName=ghcr.io/zalando/postgres-operator extractVersion=^v?(?<version>\d+\.\d+\.\d+)$
-    version: 2.0.3-uds.5
+    version: 2.0.3-uds.6
   - name: registry1
     # renovate-uds: datasource=docker depName=registry1.dso.mil/ironbank/opensource/zalando/postgres-operator extractVersion=^v?(?<version>\d+\.\d+\.\d+)$
-    version: 2.0.2-uds.13
+    version: 2.0.2-uds.14
   - name: unicorn
     # renovate-uds: datasource=docker depName=cgr.dev/defenseunicorns.com/postgres-operator-fips extractVersion=^v?(?<version>\d+\.\d+\.\d+)$
-    version: 2.0.3-uds.13
+    version: 2.0.3-uds.14
