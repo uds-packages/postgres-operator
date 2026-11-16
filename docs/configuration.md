@@ -2,6 +2,47 @@
 
 Postgres Operator is configured through the upstream [Zalando Postgres Operator chart](https://github.com/zalando/postgres-operator/tree/master/charts/postgres-operator) as well as a UDS configuration chart. It provides databases for applications within a UDS CLI Next bundle when one is not available in your cloud provider.
 
+## Table of Contents
+
+- [Package Signature Verification](#package-signature-verification)
+- [Test Bundle Configuration](#test-bundle-configuration)
+- [Networking](#networking)
+- [Postgres Clusters](#postgres-clusters)
+- [Secrets Creation](#secrets-creation)
+- [Postgres HugePages](#postgres-hugepages)
+- [Postgres Extensions](#postgres-extensions)
+
+## Package Signature Verification
+
+See [Verify a Package](../README.md#verify-a-package) in the README for the first signed releases and package source paths. Replace `<version>` and `<flavor>` with your package version and flavor. For signed releases, configure the settings below to avoid signature verification failures during bundle creation.
+
+### CLI Next — `bundle.uds.hcl`
+
+```hcl
+package "postgres-operator" {
+  source = "oci://ghcr.io/uds-packages/postgres-operator:<version>-<flavor>"
+
+  signature_verification {
+    keyless {
+      certificate_identity    = "https://github.com/uds-packages/postgres-operator/.github/workflows/release.yaml@refs/heads/main"
+      certificate_oidc_issuer = "https://token.actions.githubusercontent.com"
+    }
+  }
+}
+```
+
+### Classic — `uds-bundle.yaml`
+
+```yaml
+packages:
+  - name: postgres-operator
+    repository: ghcr.io/uds-packages/postgres-operator
+    ref: <version>-<flavor>
+    keylessVerification:
+      certificateIdentity: https://github.com/uds-packages/postgres-operator/.github/workflows/release.yaml@refs/heads/main
+      certificateOIDCIssuer: https://token.actions.githubusercontent.com
+```
+
 ## Test Bundle Configuration
 
 Tasks default to `NEXT_MODE=true` and use [`bundle/bundle.uds.hcl`](../bundle/bundle.uds.hcl).
