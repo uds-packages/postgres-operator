@@ -93,7 +93,7 @@ components:
       # Docker image that provides PostgreSQL and Patroni bundled together for PostgreSQL HA
       - ghcr.io/zalando/spilo-18:4.1-p2
       # Container image that provides the postgres-exporter sidecar to create a metrics endpoint
-      - quay.io/prometheuscommunity/postgres-exporter:v0.20.1
+      - quay.io/prometheuscommunity/postgres-exporter:v0.21.1
 
   - name: postgres-operator
     required: true

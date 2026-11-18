@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
 metrics:
-  image: "quay.io/prometheuscommunity/postgres-exporter:v0.20.1"
+  image: "quay.io/prometheuscommunity/postgres-exporter:v0.21.1"
 
 job:
   image: "ghcr.io/zalando/spilo-18:4.1-p2"
